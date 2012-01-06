@@ -1,0 +1,55 @@
+{
+    "title": "%(title)s",
+
+    "locales": ["en_US", "nl_NL"],
+    "defaultLocale": "en_US",
+
+    "domain": "www.mydomain.com",
+    "staticDomain": "www.mydomain.com",
+
+    "modules": [
+        { "name": "boot" },
+        { "name": "core" }
+    ],
+
+    "targets": {
+        "development": {
+            "plugins": [
+                { "name": "tmpl" },
+                { "name": "i18n" },
+                { "name": "css" },
+                { "name": "sass" },
+                { "name": "base64" },
+                { "name": "statics" },
+                { "name": "namespace" },
+                { "name": "stringify" }
+            ]
+        },
+        "debugging": {
+            "plugins": [
+                { "name": "tmpl" },
+                { "name": "i18n" },
+                { "name": "css" },
+                { "name": "sass" },
+                { "name": "base64" },
+                { "name": "statics" },
+                { "name": "namespace" }
+            ]
+        },
+        "distribution": {
+            "plugins": [
+                { "name": "jslint" },
+                { "name": "tmpl" },
+                { "name": "i18n" },
+                { "name": "css" },
+                { "name": "sass" },
+                { "name": "base64" },
+                { "name": "statics" },
+                { "name": "namespace" },
+                { "name": "minify" },
+                { "name": "stringify" },
+                { "name": "tarball" }
+            ]
+        }
+    }
+}

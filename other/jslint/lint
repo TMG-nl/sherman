@@ -1,0 +1,2 @@
+#/usr/bin/env sh
+java -cp other/rhino/js.jar org.mozilla.javascript.tools.shell.Main -f other/jslint/jslint.js other/jslint/main.js

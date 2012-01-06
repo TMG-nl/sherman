@@ -1,0 +1,8 @@
+This is an overview of all the documented Hybrid classes:
+			
+<for each="thisClass" in="data">
+*{+(new Link().toSymbol(thisClass.alias))+}*
+{+resolveLinks(stripHtml(summarize(thisClass.classDesc)))+}
+</for>
+
+*Note:* While not explicitly mentioned in the API reference, all classes reside in the Hyves namespace. As such, if you want to access them from the global scope, you will have to use a _Hyves._ prefix.

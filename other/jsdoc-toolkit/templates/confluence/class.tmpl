@@ -1,0 +1,104 @@
+{!
+output += html2wiki(resolveLinks(data.classDesc)) + "\n\n" +
+    "_Defined in: " + data.srcFile + "_\n\n";
+
+if (data.params.length) {
+    var split = [];
+    output += "h3. " + data.alias + makeSignature(data.params) + "\n\n" +
+        "|| parameter || description ||";
+    for (var i = 0; i < data.params.length; i++) {
+        var item = data.params[i];
+        split = item.desc.split(/\n *\n/);
+        output += "\n" + 
+            "| *"+ item.name + "* | " + html2wiki(resolveLinks(split[0])) + " |"
+    }
+    for (var i = 1; i < split.length; i++) {
+        output += "\n" +
+            resolveLinks(html2wiki(split[i]));
+    }
+}
+
+if (data.example.length) {
+    output += "\n\nh3. Example" + (data.example.length === 1 ? "" : "s"); 
+    for (var i = 0; i < data.example.length; i++) {
+        var example = data.example[i];
+        output += "\n\n" +
+            "{code:lang=js}" + example + "{code}";
+    }
+}
+!}
+
+h2. Method Summary
+<if test="data.methods.length">
+	{! var ownMethods = data.methods.filter(function($){return $.memberOf == data.alias  && !$.isNamespace}).sort(makeSortby("name")); !}
+	<if test="ownMethods.length"><for each="member" in="ownMethods">
+		{!
+			if (member.isPrivate) output += "_(private)_ ";
+			if (member.isStatic) output += "_(static)_ ";
+
+			output += "*[#" + member.name + "]*" +
+			          makeSignature(member.params);
+		!}
+		{+html2wiki(resolveLinks(summarize(member.desc)))+}
+    </for></if>
+</if>
+
+h2. Method Details
+<if test="defined(ownMethods) && ownMethods.length"><for each="member" in="ownMethods">{!
+    output += "\n\nh3. {anchor:" + member.name + "}";
+
+        if (member.isPrivate) output += "_(private)_ ";
+        if (member.isStatic) output += "_(static)_ ";
+    
+        output += member.name + makeSignature(member.params);
+        
+    output += "\n\n" +
+        resolveLinks(html2wiki(member.desc));
+
+    var split = [];
+    if (member.params.length) {
+        output += "\n\n" +
+            "|| parameter || description ||";
+        for (var i = 0; i < member.params.length; i++) {
+            var item = member.params[i];
+            split = item.desc.split(/\n *\n/);
+            output += "\n" + 
+                "| *"+ item.name + "* | " + html2wiki(resolveLinks(split[0])) + " |"
+        }
+    }
+    
+    for (var i = 1; i < split.length; i++) {
+        output += "\n\n" +
+            resolveLinks(html2wiki(split[i]));
+    }
+
+    if (member.returns.length) {
+        output += "\n\n" +
+            "*Returns:*";
+        for (var i = 0; i < member.returns.length; i++) {
+            var item = member.returns[i];
+            output += "\n&nbsp;&nbsp;&nbsp;&nbsp;" + 
+                html2wiki(resolveLinks(item.desc));
+        }
+    }
+
+    if (member.example.length) {
+        output += "\n\n" +
+            "*Example" + (member.example.length === 1 ? "" : "s") + ":*";
+        for (var i = 0; i < member.example.length; i++) {
+            var example = member.example[i];
+            output += "\n\n" +
+                "{code:lang=js}" + example + "{code}";
+        }
+    }
+
+    if (member.see.length) {
+        output += "\n\n" +
+            "*See also:*";
+        for (var i = 0; i < member.see.length; i++) {
+            var item = member.see[i];
+            output += "\n&nbsp;&nbsp;&nbsp;&nbsp;" +
+                new Link().toSymbol(item);
+        }
+    }
+!}</for></if>

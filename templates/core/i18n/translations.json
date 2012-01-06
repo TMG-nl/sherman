@@ -1,0 +1,13 @@
+{
+"CLICK": { "en_US": "Click", "nl_NL": "Klik" },
+"CLICK_FOR_RANDOM_TILE": { "en_US": "Click here to open a random tile", "nl_NL": "Klik hier om een random tile te openen" },
+"HYBRID_DEMO_APP": { "en_US": "Hybrid Demo App", "nl_NL": "Hybrid demo-app" },
+"HYVES_HYBRID_DEMO_APPLICATION": { "en_US": "Hyves Hybrid Demo Application", "nl_NL": "Hyves Hybrid demo-applicatie" },
+"HYVES_HYBRID_INTRO": {
+    "en_US": "Welcome to the General Sherman Demo Application!",
+    "nl_NL": "Welkom bij de General Sherman demo-applicatie!"
+},
+"REFERENCE_DOCS_CAN_BE_FOUND_HERE": { "en_US": "Reference documentation can be found here", "nl_NL": "Reference-documentatie kun je hier vinden" },
+"THIS_IS_RANDOM_TILE": { "en_US": "This is the random tile with id <strong>%1</strong>.", "nl_NL": "Dit is de random tile met id <strong>%1</strong>." },
+"WELCOME_TO_HYVES_HYBRID": { "en_US": "Welcome to Hyves Hybrid!", "nl_NL": "Welkom bij Hyves Hybrid!" }
+}

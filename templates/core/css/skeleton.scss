@@ -1,0 +1,76 @@
+@import "compass/css3";
+
+$grey: #888888;
+$borderStyle: 1px solid $grey;
+
+@media all and (min-width: 640px) {
+    #page {
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        top: 5%;
+        bottom: 5%;
+        @include single-box-shadow($grey 0 0 5px 5px);
+    }
+}
+@media all and (max-width: 639px) {
+    #page {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+    }
+}
+
+#page {
+    padding: 0px;
+}
+
+h1,h2,h3,h4,h5,h6 {
+    margin: 0px;
+}
+
+.page-header {
+    height: 28pt;
+    border-bottom: $borderStyle;
+    padding: 16pt;
+}
+
+.tile {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 60pt;
+    bottom: 4pt;
+    padding: 8pt;
+    overflow: auto;
+    background: white;
+
+    h1,h2,h3,h4,h5,h6 {
+        border-bottom: $borderStyle;
+    }
+
+    &.stacked {
+        left: 0px;
+        right: auto;
+        width: 50%;
+    }
+
+    &.stacked:nth-last-child(2) {
+        left: 25%;
+        border-left: $borderStyle;
+    }
+
+    &.stacked:nth-last-child(1) {
+        left: auto;
+        right: 0px;
+        border-left: $borderStyle;
+    }
+
+    &.stacked#main {
+        left: 8pt !important;
+        right: auto !important;
+        border-left: none;
+    }
+}

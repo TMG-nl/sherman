@@ -1,0 +1,13 @@
+{
+    "namespace": "%(namespace)s",
+    "dependencies": [ "boot" ],
+    "sources": [
+        { "path": "application.js" },
+        { "path": "random.tile.js" },
+        { "path": "welcome.tile.js" }
+    ],
+    "styles": [
+        { "path": "skeleton.scss" }
+    ],
+    "statics": []
+}
