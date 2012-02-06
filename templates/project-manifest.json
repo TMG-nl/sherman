@@ -15,8 +15,8 @@
     "targets": {
         "development": {
             "plugins": [
-                { "name": "tmpl" },
                 { "name": "i18n" },
+                { "name": "tmpl" },
                 { "name": "css" },
                 { "name": "sass" },
                 { "name": "base64" },
@@ -27,8 +27,8 @@
         },
         "debugging": {
             "plugins": [
-                { "name": "tmpl" },
                 { "name": "i18n" },
+                { "name": "tmpl" },
                 { "name": "css" },
                 { "name": "sass" },
                 { "name": "base64" },
@@ -39,8 +39,8 @@
         "distribution": {
             "plugins": [
                 { "name": "jslint" },
-                { "name": "tmpl" },
                 { "name": "i18n" },
+                { "name": "tmpl" },
                 { "name": "css" },
                 { "name": "sass" },
                 { "name": "base64" },

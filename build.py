@@ -3,8 +3,8 @@ from builderror import BuildError
 from optparse import OptionParser
 
 import base64
+import buildutil
 import codecs
-import hashlib
 import imp
 import logging
 import os
@@ -83,7 +83,7 @@ class ProjectBuilder(object):
                 path = os.path.abspath(path)
                 key = locale + ":" + path
                 mtime = os.stat(path).st_mtime
-                if path in self.timestamps and mtime == self.timestamps[key]:
+                if key in self.timestamps and mtime == self.timestamps[key]:
                     return False
                 self.timestamps[key] = mtime
                 with codecs.open(path, "r", "utf-8") as f:
@@ -247,6 +247,8 @@ class ProjectBuilder(object):
         if rebuildDone:
             for pluginName in self.plugins:
                 self.plugins[pluginName].filesWritten(self)
+        
+        print "Done."
 
     def loadModuleManifest(self, moduleName, modulePath):
         try:
@@ -325,32 +327,12 @@ class ProjectBuilder(object):
 
         try:
             contents = module["__concat__"]
-            filename = self.getDestinationFileName(moduleName, None, contents, locale, "js")
+            filename = buildutil.getDestinationFileName(moduleName, None, contents, locale, "js")
             with codecs.open(self.buildDir + "/" + filename, "w", "utf-8") as f:
                 f.write(contents)
             module["__output__"].append(filename)
         except Exception, exception:
             raise BuildError("Could not write output file for module %s: %s" % (moduleName, str(exception)))
-
-    def getContentHash(self, content):
-        if isinstance(content, unicode):
-            return hashlib.md5(content.encode("utf-8")).hexdigest()[:12]
-        else:
-            return hashlib.md5(content).hexdigest()[:12]
-
-    def getDestinationFileName(self, moduleName, baseName, content, locale, extension):
-        path = moduleName or ""
-        if baseName != None:
-            path += "." + baseName
-        if content != None:
-            path += "." + self.getContentHash(content)
-        if locale != None and locale != "*":
-            path += "." + locale
-        if extension.startswith("."):
-            path += extension
-        else:
-            path += "." + extension
-        return path
 
 
 if __name__ == "__main__":

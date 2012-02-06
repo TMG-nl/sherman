@@ -2,7 +2,6 @@ from __future__ import with_statement
 from builderror import BuildError
 
 import buildutil
-import codecs
 import os
 import re
 
@@ -43,27 +42,26 @@ def sourcesLoaded(locale, moduleName, modulePath, projectBuilder):
 
         for path in module:
             if path[0:5] == "tmpl/":
-                with codecs.open(modulePath + "/" + path, "r", "utf-8") as f:
-                    template = None
-                    templateId = None
-                    for line in f.readlines():
-                        if line.startswith("<!-- template"):
-                            try:
-                                templateId = re.findall(r"id=\"(.*)\"", line)[0]
-                            except IndexError:
-                                raise BuildError("Template is missing an ID in file %s" % os.path.basename(path))
-                            template = u""
-                        elif line.startswith("<!-- /template"):
-                            template = template.replace(" href=\"#\"", " href=\"javascript:void(0)\"")
+                template = None
+                templateId = None
+                for line in module[path].splitlines():
+                    if line.startswith("<!-- template"):
+                        try:
+                            templateId = re.findall(r"id=\"(.*)\"", line)[0]
+                        except IndexError:
+                            raise BuildError("Template is missing an ID in file %s" % os.path.basename(path))
+                        template = u""
+                    elif line.startswith("<!-- /template"):
+                        template = template.replace(" href=\"#\"", " href=\"javascript:void(0)\"")
 
-                            template = wsReplacer.sub(r"\1 \2", template).strip()
-                            template = spaceReplacer.sub(r"><", template)
+                        template = wsReplacer.sub(r"\1 \2", template).strip()
+                        template = spaceReplacer.sub(r"><", template)
 
-                            module["__templates__"] += u"$.template(\"%s.%s\", '%s');\n" % (moduleName, templateId, buildutil.jsStringEscape(template))
-                            template = None
-                        else:
-                            if template is not None:
-                                template += line
+                        module["__templates__"] += u"$.template(\"%s.%s\", '%s');\n" % (moduleName, templateId, buildutil.jsStringEscape(template))
+                        template = None
+                    else:
+                        if template is not None:
+                            template += line
 
 def isRebuildNeeded(locale, moduleName, modulePath, projectBuilder):
     global rebuildNeeded
