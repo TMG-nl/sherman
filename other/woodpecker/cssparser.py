@@ -352,6 +352,13 @@ class CSSToken(object):
         self.children.append(token)
         self.adopt(token)
 
+    # adds this token as a child right before token
+    def insertBefore(self, token):
+        if token.parent == None:
+            raise CSSParseError("Cannot insert a token before the root token", token = self)
+
+        token.parent.insertAt(token.ownIndex(), self)
+
     # adds this token as a child right after token
     def insertAfter(self, token):
         if token.parent == None:
@@ -550,10 +557,10 @@ class CSSToken(object):
 
     def isComment(self):
         return isinstance(self, CSSCommentToken)
-    
+
     def isWhiteSpace(self):
         return isinstance(self, CSSWhiteSpaceToken)
-    
+
     def isBoundary(self):
         return (isinstance(self, CSSBlockToken) or
                 (isinstance(self, CSSAnyToken) and self.type in [CSS_LIST_VALUE, CSS_DELIM_VALUE]))
@@ -738,7 +745,7 @@ class CSSStyleSheetToken(CSSToken):
 
 class CSSAtRuleToken(CSSToken):
     def __init__(self, parent):
-        CSSToken.__init__(self, [CSSAtKeywordToken, CSSWhiteSpaceToken, CSSAnyToken, CSSBlockToken, CSSRuleSetToken, CSSCommentToken, SCSSVariableToken], parent)
+        CSSToken.__init__(self, [CSSAtRuleToken, CSSAtKeywordToken, CSSWhiteSpaceToken, CSSAnyToken, CSSBlockToken, CSSCommentToken, SCSSVariableToken], parent)
         self.block = None
 
     def process(self, stream, options = CSSOptions()):
@@ -916,7 +923,6 @@ class CSSRuleSetToken(CSSToken):
                     return self.createChild(CSSRuleSetToken)
         else:
             if stream.current() == "{":
-                self.isOpened = True
                 self.createDelimiterChild(stream)
                 return self
 
@@ -929,6 +935,8 @@ class CSSRuleSetToken(CSSToken):
         CSSToken.adopt(self, token)
         if isinstance(token, CSSSelectorToken):
             self.selector = token
+        elif token.isDelimiter("{"):
+            self.isOpened = True
 
     def reject(self, token):
         CSSToken.reject(self, token)
