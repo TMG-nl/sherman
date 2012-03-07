@@ -8,7 +8,6 @@
         { "path": "jquery.ba-hashchange.js", "excludeFromNamespace": true, "runJsLint": false },
         { "path": "jquery.cookie.js", "excludeFromNamespace": true, "runJsLint": false },
         { "path": "jquery.timeFormat.js", "excludeFromNamespace": true, "runJsLint": false },
-        { "path": "jquery.tmpl.js", "excludeFromNamespace": true, "runJsLint": false },
         { "path": "jquery.urlencode.js", "excludeFromNamespace": true, "runJsLint": false },
         { "path": "jquery.mobile.events.js", "excludeFromNamespace": true, "runJsLint": false },
         { "path": "jquery.removeclass-extend.js", "excludeFromNamespace": true, "runJsLint": false },

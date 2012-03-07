@@ -11,6 +11,8 @@ var Tiles = function() {
 
     var invalidationStrategy = null;
 
+    var lastActivatedTileName;
+
     var tileCache;
     var modalLevel;
     var containers = [];
@@ -61,11 +63,11 @@ var Tiles = function() {
         }
         history = new History({
             changeListener: function(item, changeListenerParams) {
-                if (item) {
-                    activateTile(item.container, item, changeListenerParams);
-                } else {
-                    var route = Routes.mapPath(changeListenerParams.newHash);
-                    if (route) {
+                Routes.mapPath(changeListenerParams.newHash)
+                .then(function(route) {
+                    if (item) {
+                        activateTile(item.container, item, changeListenerParams);
+                    } else if (route) {
                         logging.debug("Opening " + route.tileName);
                         item = {
                             "name": route.tileName,
@@ -75,28 +77,28 @@ var Tiles = function() {
                             "modalLevel": modalLevel
                         };
                         var targetContainer = getTargetContainerForElement(null, route.tileName) || containers[0];
-                        activateTile(targetContainer, item, {"direction": "forward", "fromHistory": true});
+                        activateTile(targetContainer, item, { "direction": "forward", "hash": changeListenerParams.newHash });
                     }
-                }
 
-                if (changeListenerParams.direction === "back") {
-                    if (changeListenerParams.prevItem.promise) {
-                        var prevTileKey = getTileKey(changeListenerParams.prevItem);
-                        var prevTileEntry = tileCache[prevTileKey];
-                        if (prevTileEntry) {
-                            changeListenerParams.prevItem.promise.fulfill(prevTileEntry.tile);
-                            modalLevel--;
+                    if (changeListenerParams.direction === "back") {
+                        if (changeListenerParams.prevItem.promise) {
+                            var prevTileKey = getTileKey(changeListenerParams.prevItem);
+                            var prevTileEntry = tileCache[prevTileKey];
+                            if (prevTileEntry) {
+                                changeListenerParams.prevItem.promise.fulfill(prevTileEntry.tile);
+                                modalLevel--;
+                            }
+                        }
+
+                        invalidationStrategy();
+
+                        // finally fulfill the backpromise exposed via Tiles.back()
+                        if (backPromise !== null) {
+                            backPromise.fulfill();
+                            backPromise = null;
                         }
                     }
-
-                    invalidationStrategy();
-
-                    // finally fulfill the backpromise exposed via Tiles.back()
-                    if (backPromise !== null) {
-                        backPromise.fulfill();
-                        backPromise = null;
-                    }
-                }
+                });
             }
         });
 
@@ -243,7 +245,7 @@ var Tiles = function() {
         if (container.params.getScrollContainer) {
             var scrollElement = container.params.getScrollContainer();
             $('html').addClass("scrollability");
-            $(scrollElement).css({ "overflow": "hidden" });
+            $(scrollElement).css({"overflow": "hidden"});
         }
     }
 
@@ -318,8 +320,7 @@ var Tiles = function() {
      * more suitable for passing large amounts of data, since it will be never
      * be JSON-encoded into the tile key.
      *
-     * @return true if the tile was shown properly, or false when showing of the
-     *         tile was rejected.
+     * @return Promise - A promise that is fulfilled when the tile has been activated
      *
      * @see showTileInContainer(), pushModalTile()
      */
@@ -373,7 +374,7 @@ var Tiles = function() {
             }
         } while (targetContainer === false);
 
-        if (typeof targetContainer == 'string') {
+        if (typeof targetContainer == "string") {
             targetContainer = getContainerByName(targetContainer);
         }
 
@@ -396,14 +397,13 @@ var Tiles = function() {
      * this, data is also more suitable for passing large amounts of data, since
      * it will be never be JSON-encoded into the tile key.
      *
-     * @return true if the tile was shown properly, or false when showing of the
-     *         tile was rejected.
+     * @return Promise A promise which will be fulfilled when the tile has been activated
      *
      * @see showTile(), pushModalTile()
      */
     function showTileInContainer(targetContainer, tileName, params, data) {
 
-        logging.debug(["showTile",targetContainer,tileName, params, data]);
+        lastActivatedTileName = tileName;
 
         if (typeof targetContainer === "string") {
             var containerName = targetContainer;
@@ -414,13 +414,11 @@ var Tiles = function() {
             }
         }
 
-        params = (params === undefined) ? {} : (params !== false ? params : { tileId: Number.randomId(16) });
+        params = (params === undefined) ? {} : (params === false ? { "tileId": Number.randomId(16) } : params);
 
-        var item = { name: tileName, params: params, data: data, modal: false, modalLevel: modalLevel };
+        var item = { "name": tileName, "params": params, "data": data, "modal": false, "modalLevel": modalLevel };
 
-        activateTile(targetContainer, item, { direction: "forward" });
-
-        return true;
+        return activateTile(targetContainer, item, { "direction": "forward" });
     }
 
     /**
@@ -450,7 +448,7 @@ var Tiles = function() {
 
         logging.debug(["pushModalTile", tileName, params, data]);
 
-        params = (params === undefined) ? {} : (params === false ? { tileId: Number.randomId(16) } : params);
+        params = (params === undefined) ? {} : (params === false ? { "tileId": Number.randomId(16) } : params);
 
         modalLevel++;
         var item = {
@@ -463,11 +461,11 @@ var Tiles = function() {
             "promise": promise
         };
 
-        activateTile(containers[0], item, { direction: "forward" });
+        activateTile(containers[0], item, {direction: "forward"});
 
         if (UserAgent.supports("scrollability")) {
             var scrollContainer = $($("#modal").children()[1]);
-            scrollContainer.css({ "overflow": "hidden" });
+            scrollContainer.css({"overflow": "hidden"});
             $(scrollContainer.children()[0]).addClass("scrollable").addClass("vertical");
         }
 
@@ -505,7 +503,7 @@ var Tiles = function() {
         } while (container !== containers[0]);
 
         // the default container can't even scroll, too bad...
-        return null;
+        return undefined;
     }
 
     /**
@@ -634,8 +632,13 @@ var Tiles = function() {
     /**
      * Instantiates a tile in the background.
      *
+     *
      * <p>This method is useful when you want to be sure that a certain tile is
      * instantiated and available, even if you do not want to show it (yet).
+     * It will automatically load the module in which the tile is defined. Because
+     * this is an async operation, a promise will be returned by this method which will
+     * be fulfilled when the module has been loaded.
+     *
      *
      * @param tileName The name of a tile.
      * @param params Optional parameters passed to the tile.
@@ -643,39 +646,82 @@ var Tiles = function() {
      * @param promise Optional promise which will be fulfilled when the tile is
      *                dismissed.
      *
-     * @return The tile instance.
+     * @return  promise Promise that will be fulfilled when the tile (and its module/dependencies
+     *                  has been loaded. The result of the promise will be the tile instance.
      */
     function instantiateTile(tileName, params, data, promise) {
 
-        params = (params === undefined) ? {} : (params !== false ? params : { "tileId": Number.randomId(16) });
+        var tilePromise = Future.promise();
 
-        var tileKey = getTileKey({ "name": tileName, "params": params });
-        //logging.debug("Instantiate Tile with key: "+tileKey);
-        var tileEntry = tileCache[tileKey];
+        loadModuleForTile(tileName)
+        .then(function() {
+            params = (params === undefined) ? {} : (params === false ? { "tileId": Number.randomId(16) } : params);
 
-        var tile;
+            var tileKey = getTileKey({ "name": tileName, "params": params });
+            var tileEntry = tileCache[tileKey];
 
-        if (tileEntry) {
-            logging.debug("tile cache hit!");
-            tile = tileEntry.tile;
-        } else {
-            if (!NS[tileName]) {
-                throw new CoreException("Tile \"" + tileName + "\" is undefined, missing from manifest?");
+            var tile;
+
+            if (tileEntry) {
+                logging.debug("tile cache hit!");
+                tile = tileEntry.tile;
+                tilePromise.fulfill(tile);
+            } else {
+                if (!NS[tileName]) {
+                    throw new CoreException("Tile \"" + tileName + "\" is undefined, missing from manifest?");
+                }
+
+                var tileDiv = $("<div>");
+
+                tile = NS[tileName](tileDiv[0], params, data);
+                var realizePromise = tile.realize();
+
+                tile._lastupdated = Date.getUnixTimestamp();
+
+                tileEntry = {"tile": tile, "div": tileDiv, "name": tileName, "promise": promise};
+                logging.debug("tile cache miss!");
+                tileCache[tileKey] = tileEntry;
+
+                if (realizePromise) {
+                    realizePromise.then(function() {
+                        tilePromise.fulfill(tile);
+                    }, function(error) {
+                        tilePromise.fail(error);
+                    });
+                } else {
+                    tilePromise.fulfill(tile);
+                }
             }
+        }, function(error) {
+            tilePromise.fail(error);
+        });
 
-            var tileDiv = $("<div>");
+        return tilePromise;
+    }
 
-            tile = NS[tileName](tileDiv[0], params, data);
-            tile.realize();
+    /**
+     * Loads the module that contains the tile with the given
+     * name. Since this is an async operation, a promise is returned.
+     *
+     * @param tileName Name of the tile for which its module needs to be loaded
+     *
+     * @return promise Promise that is fulfilled when the module has been loaded
+     *                 or failed when the tile cannot be found.
+     */
+    function loadModuleForTile(tileName) {
 
-            tile._lastupdated = Date.getUnixTimestamp();
-
-            tileEntry = { "tile": tile, "div": tileDiv, "name": tileName, "promise": promise };
-            logging.debug("tile cache miss!");
-            tileCache[tileKey] = tileEntry;
+        if (NS[tileName]) { // module containing the tile has already been loaded
+            return Future.promise().fulfill();
         }
 
-        return tile;
+        var module = Modules.getModuleForTile(tileName);
+        if (module !== null) {
+            logging.debug("going to load module " + module + " for tile " + tileName);
+            return Modules.load(module);
+        } else {
+            logging.debug("cannot find module for tile " + tileName);
+            return Future.promise().fail("Can't find module for tile " + tileName);
+        }
     }
 
     /**
@@ -726,7 +772,7 @@ var Tiles = function() {
 
     function getItem(tileName, params) {
 
-        return { "name": tileName, "params": params };
+        return {"name": tileName, "params": params};
     }
 
     function getTileKey(historyItem) {
@@ -764,7 +810,7 @@ var Tiles = function() {
                 if (backTileEntry !== undefined) {
                     var backTile = backTileEntry.tile;
                     transitionParams.backTileName = backTileEntry.name;
-                    transitionParams.backCaption = backTile.title ? ("<i class=\"icon icon-prev\"></i> " + htmlEncode(backTile.title())) : "<i class=\"icon icon-prev\"></i> " + htmlEncode("[[BACK]]");
+                    transitionParams.backCaption = backTile.title ? (htmlEncode(backTile.title())) : htmlEncode("[[BACK]]");
                 }
             }
         }
@@ -810,20 +856,23 @@ var Tiles = function() {
         var transitionParams = { "direction": activationParams.direction, "modal": item.modal, "modalLevel": item.modalLevel, "backButtonText": item.backButtonText };
         transitionStart(container, transitionParams);
 
-        var tile = instantiateTile(item.name, item.params, item.data, item.promise);
-        var tileKey = getTileKey(item);
-        var tileEntry = tileCache[tileKey];
+        var instantiateTilePromise = instantiateTile(item.name, item.params, item.data, item.promise);
+        instantiateTilePromise.then(function(tile) {
+            var tileKey = getTileKey(item);
+            var tileEntry = tileCache[tileKey];
 
-        if (container.params.useHistory && activationParams.direction === "forward" && !activationParams.fromHistory) {
-            history.add(item, Routes.tileToPath(tile));
-        }
+            if (container.params.useHistory && activationParams.direction === "forward" && !activationParams.fromHistory) {
+                history.add(item, activationParams.hash || Routes.tileToPath(tile));
+            }
+            transitionEnd(container, tileEntry, transitionParams);
 
-        transitionEnd(container, tileEntry, transitionParams);
+            if (window.GapUtility && GapUtility.forceRepaint) {
+                GapUtility.forceRepaint();
+            }
+            Profiling.stop(item.name, profilingToken);
+        });
 
-        if (window.GapUtility && GapUtility.forceRepaint) {
-            GapUtility.forceRepaint();
-        }
-        Profiling.stop(item.name, profilingToken);
+        return instantiateTilePromise;
     }
 
     // these constants and variables are specific to the timeoutInvalidationStrategy
@@ -911,6 +960,10 @@ var Tiles = function() {
         $("#tile-debug").append("<p>Activate " + item.name + " in " + container.name + "</p>");
     }
 
+    function getLastActivatedTileName() {
+        return lastActivatedTileName;
+    }
+
     reset();
 
     return {
@@ -932,6 +985,8 @@ var Tiles = function() {
         "refreshTile": refreshTile,
         "getTileFromCache": getTileFromCache,
         "debug": debug,
+        "getLastActivatedTileName": getLastActivatedTileName,
+        "loadModuleForTile": loadModuleForTile,
 
         InvalidationStrategies: InvalidationStrategies
     };

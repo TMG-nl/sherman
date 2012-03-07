@@ -4,6 +4,7 @@ from builderror import BuildError
 import base64
 import hashlib
 import os
+import re
 
 
 htmlEscapeTable = {
@@ -30,7 +31,8 @@ extensionToMimeTypeMap = {
     "jpg": "image/jpeg",
     "jpeg": "image/jpeg",
     "js": "text/javascript",
-    "png": "image/png"
+    "png": "image/png",
+    "svg": "image/svg+xml"
 }
 
 """ Returns the MIME type for some specific extension """
@@ -60,7 +62,7 @@ def base64EncodeImage(path):
     return b64Image
 
 """ Returns a 12 byte hash for the given content. """
-def getContentHash(self, content):
+def getContentHash(content):
     if isinstance(content, unicode):
         return hashlib.md5(content.encode("utf-8")).hexdigest()[:12]
     else:
@@ -68,16 +70,23 @@ def getContentHash(self, content):
 
 """ Returns the proper output file name for a file, given the module name, base
     name, file content, locale and extension. """
-def getDestinationFileName(self, moduleName, baseName, content, locale, extension):
-    path = moduleName or ""
-    if baseName != None:
-        path += "." + baseName
-    if content != None:
-        path += "." + getContentHash(content)
-    if locale != None and locale != "*":
-        path += "." + locale
-    if extension.startswith("."):
-        path += extension
-    else:
-        path += "." + extension
-    return path
+fileNamePattern = "{moduleName}{.baseName}{.md5}{.locale}{.extension}"
+def getDestinationFileName(moduleName, baseName, content, locale, extension):
+    global fileNamePattern
+
+    def replacePlaceholder(pattern, placeholderName, replacement):
+        for match in re.finditer(r"\{(.?)" + placeholderName + r"(.?)\}", pattern):
+            fullMatch = match.group(0)
+            prefix = match.group(1)
+            postfix = match.group(2)
+            fullReplacement = prefix + replacement + postfix if replacement else ""
+            pattern = pattern.replace(fullMatch, fullReplacement)
+        return pattern
+
+    fileName = fileNamePattern
+    fileName = replacePlaceholder(fileName, "moduleName", moduleName)
+    fileName = replacePlaceholder(fileName, "baseName", baseName)
+    fileName = replacePlaceholder(fileName, "md5", getContentHash(content) if content else "")
+    fileName = replacePlaceholder(fileName, "locale", locale if locale != "*" else "")
+    fileName = replacePlaceholder(fileName, "extension", extension[1:] if extension.startswith(".") else extension)
+    return fileName

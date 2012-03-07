@@ -80,17 +80,19 @@ function History(historyParams) {
         currentIndex++;
         history.splice(currentIndex, history.length - currentIndex, hash);
 
-        addItemsInProgress++;
-
         if (useHtml5HistoryApi()) {
             if (hash.substr(0, 1) != "/") {
                 hash = "/" + hash;
             }
             window.history.pushState(null, null, baseLocation + hash + queryString);
+            addItemsInProgress++;
             onhashchange();
         } else {
-            location.hash = hash; // on some platforms, this immediately triggers
-            return;               // onhashchange, before the method is finished
+            if (location.hash.substr(1) != hash) {
+                addItemsInProgress++;
+                location.hash = hash; // on some platforms, this immediately triggers
+                return;               // onhashchange, before the method is finished
+            }
         }
     }
 
@@ -103,7 +105,7 @@ function History(historyParams) {
                 newHash = newHash.substr(1);
             }
         } else {
-            newHash = location.hash.substring(1);
+            newHash = location.hash.substr(1);
         }
 
         var prevHash = currentHash;
@@ -199,10 +201,11 @@ function History(historyParams) {
     function back() {
 
         if (currentIndex > 0) {
-            if (UserAgent.isIOS()) {
-                // iOS (especially iPhone) has a weird bug that causes back
+            if (UserAgent.isSafari() || UserAgent.isIOS()) {
+                // Safari has a weird bug that causes back
                 // navigation to be screwed up from time to time, so just set
                 // the right hash ourselves
+                // also affect UIWebViews on iOS
                 var newHash = history[currentIndex - 1];
                 location.hash = newHash;
             } else {
@@ -223,10 +226,11 @@ function History(historyParams) {
      */
     function go(delta) {
 
-        if (UserAgent.isIOS()) {
+        if (UserAgent.isSafari() || UserAgent.isIOS()) {
             // iOS (especially iPhone) has a weird bug that causes back
             // navigation to be screwed up from time to time, so just set
             // the right hash ourselves
+            // also affects UIWebView on iOS
             currentIndex += delta;
             if (currentIndex < 0) {
                 currentIndex = 0;
@@ -251,6 +255,11 @@ function History(historyParams) {
             window.removeEventListener("popstate", onhashchange);
         } else {
             $(window).unbind("hashchange", onhashchange);
+            /*
+             * Reset the window hash, so that the current page is excluded from 
+             * the history object.
+             */
+            window.location.hash = "";
         }
     }
 

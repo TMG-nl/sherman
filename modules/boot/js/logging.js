@@ -13,7 +13,7 @@ var logging = {
             return s + n;
         };
 
-        var d = new Date(Date.now());
+        var d = new Date();
         var s = pad(d.getHours()) + ":" +
                 pad(d.getMinutes()) + ":" +
                 pad(d.getSeconds()) + ":" +
@@ -61,17 +61,17 @@ var logging = {
     },
 
     exception: function(msg, e) {
-
-        msg += ": " + (e === undefined ? "Unknown exception caught" :
-                       (e.message ? e.message : e.error_message) + (e.error_code ? (" (" + e.error_code + ")") : ""));
+ 
+        msg += ": " + (e === undefined ? "Unknown exception caught" : e.toString() + (e.error_code ? (" (" + e.error_code + ")") : ""));
 
         if (Testing.log) {
             Testing.log("EXCEPTION: " + msg);
         } else if (window.debug && debug.log) {
             debug.log(msg);
         } else if (window.console && window.console.error) {
-            console.error(msg);
-            if (window.console.trace) {
+            console.error(msg); // Log the message to the console so it can be inspected.
+            console.error(e); // Send the exception to the console so it can be inspected.
+            if (console.trace) {
                 console.trace();
             }
         }
@@ -93,7 +93,7 @@ if (window.location.href.indexOf("debug=1") !== -1) {
              * go to http://<yourhostname>.hyveshq:9191/client/#hybrid
              *
              * You can only use weinre if the Hybrid is ran from the same hostname (e.g.)
-             * http://<yourhostname>.hyveshq:9090/cgi-bin/index.py
+             * http://<yourhostname>.hyveshq:9090/
              *
              * More info on weinre: http://phonegap.github.com/weinre/
              */

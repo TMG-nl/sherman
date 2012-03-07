@@ -185,6 +185,9 @@ function getQueryParam(name, defaultValue, queryString) {
  */
 function i18n(module, text) {
 
+    /*
+     * Note: module param is handled automagically in templates.
+     */
     if (text instanceof Array) {
         if (arguments[2] == 0) {
             text = text[text.length == 2 ? 1 : 0];
@@ -209,12 +212,4 @@ function i18n(module, text) {
 function htmlEncode(value) {
 
     return $("<div/>").text(value).html();
-}
-
-/**
- * Decode html encoded string to a normal js string
- */
-function htmlDecode(value) {
-
-      return $("<div/>").html(value).text();
 }

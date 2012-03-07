@@ -36,9 +36,10 @@ var Routes = function() {
 
     /**
      * Maps the current window location to a tile name and optional parameters.
+     * Since this could involve loading a module, this is an async method.
      *
-     * @return An object containing the tile name and parameters. Returns null
-     *          if the path cannot be mapped.
+     * @return Promise Promise that will be fulfilled with object containing the tile
+     *         name and parameters, or null if the path cannot be mapped.
      *
      * @see mapPath()
      */
@@ -65,11 +66,12 @@ var Routes = function() {
 
     /**
      * Maps a path to a tile name and optional parameters.
+     * Since this could involve loading a module, this is an async method.
      *
      * @param path The path to map.
      *
-     * @return An object containing the tile name and parameters. Returns null
-     *          if the path cannot be mapped.
+     * @return Promise Promise that will be fulfilled with object containing the tile
+     *         name and parameters, or null if the path cannot be mapped.
      *
      * @example
      * Routes.mapPath("/www-item/1234");
@@ -77,16 +79,25 @@ var Routes = function() {
      */
     function mapPath(path) {
 
+        var mapPromise = Future.promise();
+        
         var tileName = pathToTileName(path);
         if (tileName === null) {
-            return null;
+            return mapPromise.fulfill(null);
         }
+        
+        Tiles.loadModuleForTile(tileName)
+        .then(function() {
+            if (NS[tileName].hasOwnProperty("mapPath")) {
+                 mapPromise.fulfill({"tileName": tileName, "params": NS[tileName].mapPath(path)});
+            } else {
+                mapPromise.fulfill(null);
+            }
+        }, function(error) {
+            mapPromise.fulfill(null);
+        });
 
-        if (NS[tileName].hasOwnProperty("mapPath")) {
-            return {"tileName": tileName, "params": NS[tileName].mapPath(path)};
-        } else {
-            return null;
-        }
+        return mapPromise;
     }
 
     function pathToTileName(path) {
@@ -114,11 +125,7 @@ var Routes = function() {
 
         tileName += "Tile";
         logging.debug("Routes.pathToTileName: ", path, tileName);
-        if (NS.hasOwnProperty(tileName)) {
-            return tileName;
-        } else {
-            return null;
-        }
+        return tileName;
     }
 
     /**

@@ -31,10 +31,10 @@ def render(locale):
     print "Content-Type: text/html"     # HTML is following
     print                               # blank line, end of headers
 
-    with open("build/__version__.%s.md5" % locale) as f:
+    with open("__version__.%s.md5" % locale) as f:
         version = f.read()
 
-    with open("build/boot.%s.%s.html" % (version, locale)) as f:
-        print f.read().replace("[static_base]", "/build")
+    with open("boot.%s.%s.html" % (version, locale)) as f:
+        print f.read().replace("[static_base]", "")
 
 render(locale)

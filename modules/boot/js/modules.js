@@ -16,7 +16,6 @@ if (!document.head) {
 var Modules = function() {
 
     var baseUrl;
-    var locale = "en_US";
     var moduleConfig = null;
 
     var pendingCacheables = {};
@@ -28,8 +27,15 @@ var Modules = function() {
     var RETRY_TIMEOUT = 3142; // ms
     var MAX_RETRIES = 9;
     var retryTimer = null;
+    
+    var inverseTileModuleDependencies = null;
 
     var evil = window[["ev", "al"].join("")];
+    
+    /* The locale for loading the modules.
+     * @private 
+     */
+    var locale;
 
     /**
      * Configures the module system.
@@ -45,8 +51,8 @@ var Modules = function() {
     function config(_baseUrl, _locale, _moduleConfig) {
 
         baseUrl = _baseUrl;
-        locale = _locale;
         moduleConfig = _moduleConfig;
+        setLocale(_locale);
 
         // remove outdated cached modules
         var name;
@@ -54,11 +60,11 @@ var Modules = function() {
             for (name in moduleConfig) {
                 if (moduleConfig.hasOwnProperty(name)) {
                     var moduleKey = "mk." + name;
-                    if (window.localStorage.hasOwnProperty(moduleKey)) {
-                        var moduleContentKey = window.localStorage[moduleKey];
+                    var moduleContentKey = window.localStorage.getItem(moduleKey);
+                    if (moduleContentKey) {
                         if ("mck." + moduleConfig[name][locale] != moduleContentKey) {
-                            delete window.localStorage[moduleContentKey];
-                            delete window.localStorage[moduleKey];
+                            window.localStorage.removeItem(moduleContentKey);
+                            window.localStorage.removeItem(moduleKey);
                         }
                     }
                 }
@@ -122,11 +128,12 @@ var Modules = function() {
 
             if (window.localStorage) {
                 var moduleKey = "mk." + name;
-                if (window.localStorage.hasOwnProperty(moduleKey)) {
-                    var moduleContentKey = window.localStorage[moduleKey];
-                    if (window.localStorage.hasOwnProperty(moduleContentKey)) {
+                var moduleContentKey = window.localStorage.getItem(moduleKey);
+                if (moduleContentKey) {
+                    var moduleContent = window.localStorage.getItem(moduleContentKey);
+                    if (moduleContent) {
                         // module in cache, so make available & load immediately
-                        availableModules[name] = window.localStorage[moduleContentKey];
+                        availableModules[name] = moduleContent;
                         evaluateModule(name);
                         continue;
                     }
@@ -191,6 +198,7 @@ var Modules = function() {
 
         var resource = resources[locale];
         if (!resource) {
+            logging.debug(resources);
             return failModule(name, new Error("Module has no resource(s) for locale " + locale));
         }
 
@@ -235,8 +243,20 @@ var Modules = function() {
             var resource = moduleConfig[name][locale];
             var moduleKey = "mk." + name;
             var moduleContentKey = "mck." + resource;
-            window.localStorage[moduleKey] = moduleContentKey;
-            window.localStorage[moduleContentKey] = body;
+            try {
+                window.localStorage.setItem(moduleKey, moduleContentKey);
+                window.localStorage.setItem(moduleContentKey, body);
+            }
+            catch (e) {
+                if (e.code !== DOMException.QUOTA_EXCEEDED_ERR) {
+                    throw e;
+                }
+                // else {
+                    // On some devices / configurations the quota is really small,
+                    // and our cached module may not fit. Let's not make a big deal
+                    // out of it.
+                // }
+            }
         }
     }
 
@@ -381,7 +401,7 @@ var Modules = function() {
      */
     function failModule(name, exception) {
 
-        logging.debug("Fail module", name);
+        logging.debug("Fail module", name, ""+exception);
         if (moduleConfig[name].essential) {
             var message = "Module " + name + " could not be loaded";
             if (exception) {
@@ -420,6 +440,49 @@ var Modules = function() {
 
         return locale;
     }
+    
+    /**
+     * Returns the name of the module in which the given tile name is defined
+     * 
+     * @return String Name of name of the module in which the given tile name is defined,
+     *                null if not defined. 
+     */
+    function getModuleForTile(tileName) {
+        
+        if (inverseTileModuleDependencies === null) {
+            createInverseTileModuleMap();
+        }
+        
+        if (inverseTileModuleDependencies.hasOwnProperty(tileName)) {
+            return inverseTileModuleDependencies[tileName];
+        } else {
+            return null;
+        }
+    }
+    
+    function createInverseTileModuleMap() {
+            
+        inverseTileModuleDependencies = {};
+        var tile;
+        for (var module in Modules.tileModuleDependencies) {
+            if (Modules.tileModuleDependencies.hasOwnProperty(module)) {
+                for (var i = 0; i < Modules.tileModuleDependencies[module].length; i++) {
+                    tile = Modules.tileModuleDependencies[module][i];
+                    inverseTileModuleDependencies[tile] = module;
+                }
+            }
+        }
+    }
+    
+    /* Set the locale
+     * @private 
+     */
+    function setLocale(_locale) {
+        
+        locale = _locale;
+    }
+    
+    setLocale("en_US");
 
     return {
         "config": config,
@@ -429,7 +492,8 @@ var Modules = function() {
         "enableModule": enableModule,
         "failModule": failModule,
         "getStaticUrl": getStaticUrl,
-        "currentLocale": currentLocale
+        "currentLocale": currentLocale,
+        "getModuleForTile": getModuleForTile
     };
 }();
 

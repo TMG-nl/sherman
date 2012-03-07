@@ -19,8 +19,8 @@ var Future = function() {
     };
 
     var globalErrorHandler = function(exception) {
-
         logging.exception("Future default global error handler", exception);
+        throw exception;
     };
 
     /**
@@ -32,7 +32,6 @@ var Future = function() {
      * @public @static
      */
     function setGlobalErrorHandler(errorHandler) {
-
         globalErrorHandler = errorHandler;
     }
 
@@ -121,13 +120,13 @@ var Future = function() {
             this.errorHandlers.push(errorHandler);
             this.state = state.UNFULFILLED;
         } else if (this.state === state.FULFILLED) {
-            setTimeout(function() {
+            setZeroTimeout(function() {
                 self.callFulfilled([fulfilledHandler], self.result);
-            }, 0);
+            });
         } else if (this.state === state.FAILED) {
-            setTimeout(function() {
+            setZeroTimeout(function() {
                 self.callError([errorHandler], self.result);
-            }, 0);
+            });
         } else if (this.state === state.CANCELED) {
             var makeJsLintHappy = true; // do nothing
         } else {
@@ -158,7 +157,7 @@ var Future = function() {
         }
 
         if (this.state !== state.UNATTACHED && this.state !== state.UNFULFILLED) {
-            throw new Error("incorrect state for fulfill: " + this.state);
+            throw new PromiseError("incorrect state for fulfill: " + this.state);
         }
 
         this.state = state.FULFILLED;
@@ -186,12 +185,16 @@ var Future = function() {
      */
     Promise.prototype.fail = function(result) {
 
+        if (typeof(result) === "undefined") {
+            throw new PromiseError("Please do not use Promise.fail() without passing anything.");
+        }
+
         if (this.state === state.CANCELED) {
             return;
         }
 
         if (this.state !== state.UNATTACHED && this.state !== state.UNFULFILLED) {
-            throw new Error("incorrect state for fail: " + this.state);
+            throw new PromiseError("incorrect state for fail: " + this.state);
         }
 
         this.state = state.FAILED;
@@ -216,11 +219,16 @@ var Future = function() {
     Promise.prototype.cancel = function() {
 
         if (this.state === state.CANCELED) {
-            throw new Error("already canceled");
+            throw new PromiseError("already canceled");
         }
 
         this.state = state.CANCELED;
     };
+
+    function PromiseError() {
+    }
+
+    PromiseError.prototype = Error;
 
     /**
      * Returns a new promise.
@@ -239,3 +247,45 @@ var Future = function() {
         "promise": promise
     };
 }();
+
+/**
+ * We have a special function for triggering 0 millisecond timeouts. Triggering
+ * such brief timeouts is not possible with the default setTimeout function.
+ * @link http://dbaron.org/log/20100309-faster-timeouts
+ */
+(function() {
+    var timeouts = [];
+    var messageName = "zero-timeout-message";
+
+    // Like setTimeout, but only takes a function argument.  There's
+    // no time argument (always zero) and no arguments (you have to
+    // use a closure).
+    function setZeroTimeout(fn) {
+        timeouts.push(fn);
+        window.postMessage(messageName, "*");
+    }
+
+    function fallbackSetZeroTimeout(fn) {
+        window.setTimeout(fn, 0);
+    }
+
+    function handleMessage(event) {
+        if (event.source === window && event.data === messageName) {
+            event.stopPropagation();
+            if (timeouts.length > 0) {
+                var fn = timeouts.shift();
+                fn();
+            }
+        }
+    }
+
+    if (window.postMessage) {
+        window.addEventListener("message", handleMessage, true);
+
+        // Add the one thing we want added to the window object.
+        window.setZeroTimeout = setZeroTimeout;
+    }
+    else {
+        window.setZeroTimeout = fallbackSetZeroTimeout;
+    }
+})();

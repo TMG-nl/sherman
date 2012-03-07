@@ -322,10 +322,16 @@ var UserAgent = function() {
     function isHybridContainer() {
 
         return Boolean(
+                /*
+                 * window.device is set from the PhoneGap container. It contains
+                 * these properties:
+                 * {model:, name:, phonegapVersion:, platform:, uuid:}
+                 */
                 (typeof window.device !== "undefined") ||
                 (typeof window.phonegap !== "undefined") ||
                 properties.container ||
-                isNokiaContainer()
+                isNokiaContainer() ||
+                navigator.userAgent.indexOf("HybridContainer") >= 0 // This is provided in the iOS & Android container
             );
     }
 
@@ -405,7 +411,7 @@ var UserAgent = function() {
      * @param device Name of the device to check for.
      * @return true if the device matches, false otherwise.
      *
-     * @see isIPhone(), isBlackBerry(), isPSP()
+     * @see isIPhone(), isBlackBerry()
      */
     function isDevice(device) {
 
@@ -495,17 +501,6 @@ var UserAgent = function() {
     }
 
     /**
-     * Checks whether the reported user-agent is a PlayStation Portable.
-     *
-     * @return true if the user-agent belongs to a PSP, false otherwise.
-     */
-    function isPSP() {
-
-        return isDevice("PSP");
-    }
-
-
-    /**
      * Checks whether the reported user-agent is an installed Google Chrome Extension
      *
      * @return true if the user-agent is an installed Google Chrome Extension
@@ -513,18 +508,6 @@ var UserAgent = function() {
     function isChromeExtension() {
 
         return window.chrome && window.chrome.extension;
-    }
-
-
-    /**
-     * Checks whether the reported user-agent is on Windows Mobile.
-     *
-     * @return true if the user-agent belongs to a Windows Mobile device, false
-     *          otherwise.
-     */
-    function isWindowsMobile() {
-
-        return isMobileDevice() && isWindows();
     }
 
     /**
@@ -617,6 +600,15 @@ var UserAgent = function() {
             return Boolean(navigator.camera) || isAndroidContainer() || !isIOS();
         }
 
+        if (capability === "camera") {
+            return isIOSContainer();
+        }
+
+        if (capability === "groupchat-push") {
+
+            return UserAgent.isIPhoneContainer();
+        }
+
         if (properties.capabilities.hasOwnProperty(capability)) {
             return properties.capabilities[capability];
         } else {
@@ -692,7 +684,7 @@ var UserAgent = function() {
         "symbian": { "type": "mobile", "platform": "Symbian", "capabilities": { "cssShadows": false, "cssPositionFixed": true, "keyup": false } },
         // android is by default not type:mobile since there are also tablets
         "i9100": { "capabilities": { "cssPositionFixed": false } },
-        "android": { "platform": "Android", "platformVersionKey": "android ", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=2.3": { "cssPositionFixed": true } }},
+        "android": { "platform": "Android", "platformVersionKey": "android ", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=3.0": { "cssPositionFixed": true } }},
         "midp": { "type": "mobile" },
         "up.browser": { "type": "mobile" },
         "siemens": { "type": "mobile" },
@@ -725,8 +717,8 @@ var UserAgent = function() {
         "portalmmm": { "type": "mobile" },
         "opwv-sdk": { "type": "mobile" },
         "ipad": { "type": "desktop", "device": "iPad", "platformVersionKey": "ipad; cpu os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true } } }, // the iPod Touch has a webbrowser
-        "iphone": { "type": "mobile", "device": "iPhone", "platformVersionKey": "iphone os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true } } },
-        "ipod": { "type": "mobile", "device": "iPod", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true } } }, // the iPod Touch has a webbrowser
+        "iphone": { "type": "mobile", "device": "iPhone", "platformVersionKey": "iphone os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "groupchat": true }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true } } },
+        "ipod": { "type": "mobile", "device": "iPod", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "groupchat": true }, "platformVersionCapabilities": { ">=5": { "scrollover": true } } }, // the iPod Touch has a webbrowser
         "playstation portable": { "type": "mobile", "device": "PSP" },
         "opera mobi": { "type": "mobile", "browser": "Opera" },
         "opera mini": { "type": "mobile", "browser": "Opera Mini", "browserVersionKey": "opera mini/", "capabilities": { "cssPositionFixed": false } },
@@ -742,6 +734,7 @@ var UserAgent = function() {
         "n900": { "type": "mobile", "device": "Nokia", "platform": "Linux", "browser": "Firefox", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "keyup": false } },
         "maemo": { "type": "mobile", "device": "Nokia", "platform": "Linux", "browser": "Firefox" },
         "mobile": { "type": "mobile", "capabilities": { "touchScreen": true } }, // assume all mobile devices (we support) have a touch interface
+        "mobileie": { "type": "mobile", "platform": "Windows", "capabilities": { "keyup": true, "touchScreen": true, "cssPositionFixed": true } },
 
         // hyves-specific stuff
         "hyves desktop": { "type": "desktop", "browser": "Hyves Desktop", "browserVersion": "", "browserVersionKey": "hyves desktop/" },
@@ -753,8 +746,9 @@ var UserAgent = function() {
         "opera": { "type": "desktop", "browser": "Opera", "browserVersionKey": "opera/", "capabilities": { "cssPositionFixed": true } },
         "firefox": { "type": "desktop", "browser": "Firefox", "browserVersionKey": "firefox/", "capabilities": { "cssShadows": true, "cssPositionFixed": true } },
         "chromeframe": { "type": "desktop", "browser": "Chrome", "browserVersion": "", "browserVersionKey": "chromeframe/" }, // treat IE with Chromeframe as Chrome
-        "chrome": { "type": "desktop", "browser": "Chrome", "browserVersion": "", "browserVersionKey": "chrome/" },
+        "chrome": { "type": "desktop", "browser": "Chrome", "browserVersion": "", "browserVersionKey": "chrome/", "capabilities": {"groupchat": true} },
         "trident/4.0": { "browserVersion": "8.0" },
+        "trident/5.0": { "browserVersion": "9.0" },
         "msie": { "type": "desktop", "browser": "MSIE", "browserVersionKey": "msie ", "versionCapabilities": { ">=7": { "cssPositionFixed": true } }},
         "safari/85": { "browserVersion": "1.0" },
         "safari/125": { "browserVersion": "1.2" },
@@ -784,8 +778,6 @@ var UserAgent = function() {
         for (var key in userAgentCapabilities) {
             if (userAgentCapabilities.hasOwnProperty(key) && userAgentString.indexOf(key) > -1) {
                 var agentProperties = userAgentCapabilities[key];
-
-                //logging.debug("Got a match on " + key);
                 for (var propertyName in agentProperties) {
                     if (agentProperties.hasOwnProperty(propertyName)) {
                         var propertyValue = agentProperties[propertyName];
@@ -838,6 +830,7 @@ var UserAgent = function() {
         properties.capabilities.touchEvents = hasTouchEventSupport();
         properties.capabilities.iscroll = isIPhone() && !supports("scrollover");
         properties.capabilities.scrollability = isIPad() && !supports("scrollover");
+        properties.capabilities.pushnotifications = navigator.push || isAndroidContainer() || window.device;
     }
 
     function processProperties(properties, userAgentString) {
@@ -944,7 +937,7 @@ var UserAgent = function() {
 
     function compareVersions(version1, version2Components, lessValue, equalValue, moreValue) {
 
-        var components = version1.split(".");
+        var components = version1.toString().split(".");
         for (var i = 0; i < 3; i++) {
             if (components.length < i + 1) {
                 return equalValue;
@@ -1007,9 +1000,7 @@ var UserAgent = function() {
         "isIPhone": isIPhone,
         "isIPad": isIPad,
         "isBlackBerry": isBlackBerry,
-        "isPSP": isPSP,
         "isNokia": isNokia,
-        "isWindowsMobile": isWindowsMobile,
         "isPlatformVersion": isPlatformVersion,
         "platformVersionIsAtLeast": platformVersionIsAtLeast,
         "platformVersionIsLessThan": platformVersionIsLessThan,
