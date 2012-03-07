@@ -15,14 +15,14 @@ class Feature(ShermanFeature):
         if moduleName != "boot":
             return
 
-        jqueryTmplIncluded = False
+        hoganIncluded = False
         for source in manifest["sources"]:
-            if source["path"].endswith("jquery.tmpl.js"):
-                jqueryTmplIncluded = True
+            if source["path"].endswith("hogan/template.js"):
+                hoganIncluded = True
 
-        if not jqueryTmplIncluded:
+        if not hoganIncluded:
             manifest["sources"].append({
-                "path": "/features/jquery-tmpl/jquery.tmpl.js",
+                "path": "/features/hogan/template.js",
                 "excludeFromNamespace": True,
                 "runJsLint": False
             })
@@ -33,7 +33,7 @@ class Feature(ShermanFeature):
         templates = buildutil.dirEntries(modulePath + "/tmpl")
         updatedTemplates = []
         for path in templates:
-            if not path.endswith(".tmpl.html"):
+            if not path.endswith(".moustache.html"):
                 continue
 
             path = self.projectBuilder.resolveFile(path, modulePath + "/tmpl")
@@ -46,12 +46,9 @@ class Feature(ShermanFeature):
         if not self.rebuildNeeded:
             return
 
-        print "    Loading jQuery templates..."
+        print "    Loading Hogan templates..."
 
         module["__templates__"] = u""
-
-        wsReplacer = re.compile(r"([>}])[ \t\n\r\f\v]+([<{])", flags = re.MULTILINE)
-        spaceReplacer = re.compile(r"> <", flags = re.MULTILINE)
 
         for path in updatedTemplates:
             template = None
@@ -66,10 +63,14 @@ class Feature(ShermanFeature):
                 elif line.startswith("<!-- /template"):
                     template = template.replace(" href=\"#\"", " href=\"javascript:void(0)\"")
 
-                    template = wsReplacer.sub(r"\1 \2", template).strip()
-                    template = spaceReplacer.sub(r"><", template)
-
-                    module["__templates__"] += u"$.template(\"%s.%s\", '%s');\n" % (moduleName, templateId, buildutil.jsStringEscape(template))
+                    pipes = subprocess.Popen(self.shermanDir + "/other/hogan/precompile.js", shell = True, stdin = subprocess.PIPE, stdout = subprocess.PIPE)
+                    compiledTemplate = ""
+                    while pipes.poll() == None:
+                        (stdoutdata, stderrdata) = pipes.communicate(input = template)
+                        if stderrdata != None or pipes.returncode != 0:
+                            raise BuildError("Error compiling Moustache template %s: %s" % (os.path.basename(path), stderrdata))
+                        compiledTemplate += stdoutdata
+                    module["__templates__"] += "Modules.%s.templates[\"%s\"] = new Hogan.Template(%s);\n" % (moduleName, templateId, compiledTemplate)
                     template = None
                 else:
                     if template is not None:

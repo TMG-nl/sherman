@@ -11,7 +11,7 @@ class Feature(ShermanFeature):
         module = self.currentBuild.files[locale][moduleName]
         namespace = module["__manifest__"]["namespace"]
 
-        varReplacer = re.compile(r"^(?:var )?([a-zA-Z0-9.]+) = ", flags = re.MULTILINE)
+        varReplacer = re.compile(r"^(?:var )?([a-zA-Z0-9.\[\]\"']+) = ", flags = re.MULTILINE)
         functionReplacer = re.compile(r"^function ([a-zA-Z0-9]+)\(", flags = re.MULTILINE)
 
         for source in module["__manifest__"]["sources"]:
