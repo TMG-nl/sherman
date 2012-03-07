@@ -295,6 +295,14 @@ class ProjectBuilder(object):
 
         print "Building module %s..." % moduleName 
 
+        for featureName in self.featureList:
+            try:
+                defaultLocale = self.projectManifest["defaultLocale"]
+                manifest = self.currentBuild.files[defaultLocale][moduleName]["__manifest__"]
+                self.features[featureName].manifestLoaded(moduleName, modulePath, manifest)
+            except Exception, exception:
+                raise BuildError("Exception in feature %s" % featureName, exception)
+
         for locale in self.locales:
             print "  Processing locale %s..." % locale
 
@@ -317,17 +325,8 @@ class ProjectBuilder(object):
 
                 if not "dependencies" in manifest:
                     raise BuildError("No dependencies specified for module %s" % moduleName)
-            else:
-                defaultLocale = self.projectManifest["defaultLocale"]
-                manifest = self.currentBuild.files[defaultLocale][moduleName]["__manifest__"]
         except Exception, exception:
             raise BuildError("Could not load manifest for module %s" % moduleName, exception)
-
-        for featureName in self.featureList:
-            try:
-                self.features[featureName].manifestLoaded(moduleName, modulePath, manifest)
-            except Exception, exception:
-                raise BuildError("Exception in feature %s" % featureName, exception)
 
     def loadSources(self, locale, moduleName, modulePath):
         module = self.currentBuild.files[locale][moduleName]

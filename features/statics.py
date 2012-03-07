@@ -10,18 +10,13 @@ class Feature(ShermanFeature):
 
     rebuildNeeded = False
 
-    def sourcesLoaded(self, locale, moduleName, modulePath):
+    def manifestLoaded(self, moduleName, modulePath, manifest):
         self.rebuildNeeded = False
 
-        module = self.currentBuild.files[locale][moduleName]
-        if not "statics" in module["__manifest__"] or len(module["__manifest__"]["statics"]) == 0:
+        if not "statics" in manifest or len(manifest["statics"]) == 0:
             return
 
-        print "    Copying statics..."
-
-        module["__staticMap__"] = {}
-
-        for static in module["__manifest__"]["statics"]:
+        for static in manifest["statics"]:
             path = self.projectBuilder.resolveFile(static["path"], modulePath + "/statics")
             mtime = os.stat(path).st_mtime
             if path in self.timestamps and mtime == self.timestamps[path]:
@@ -33,8 +28,13 @@ class Feature(ShermanFeature):
         if not self.rebuildNeeded:
             return
 
-        for static in module["__manifest__"]["statics"]:
-            print "      %s..." % static["path"]
+        print "  Copying statics..."
+
+        for locale in self.projectBuilder.locales:
+            self.currentBuild.files[locale][moduleName]["__staticMap__"] = {}
+
+        for static in manifest["statics"]:
+            print "    %s..." % static["path"]
 
             path = self.projectBuilder.resolveFile(static["path"], modulePath + "/statics")
 
@@ -49,7 +49,8 @@ class Feature(ShermanFeature):
                 with open(destPath, "w") as outFile:
                     outFile.write(content)
 
-            module["__staticMap__"][static["path"]] = destFileName
+            for locale in self.projectBuilder.locales:
+                self.currentBuild.files[locale][moduleName]["__staticMap__"][static["path"]] = destFileName
 
     def isRebuildNeeded(self, locale, moduleName, modulePath):
         return self.rebuildNeeded

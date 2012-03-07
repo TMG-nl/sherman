@@ -28,10 +28,11 @@ class Feature(ShermanFeature):
             })
 
     def sourcesLoaded(self, locale, moduleName, modulePath):
+        self.rebuildNeeded = False
+
         module = self.currentBuild.files[locale][moduleName]
 
         templates = buildutil.dirEntries(modulePath + "/tmpl")
-        updatedTemplates = []
         for path in templates:
             if not path.endswith(".moustache.html"):
                 continue
@@ -40,9 +41,8 @@ class Feature(ShermanFeature):
             contents = self.projectBuilder.modifiedFiles.read(locale, path)
             if contents:
                 module[path] = contents
-                updatedTemplates.append(path)
+                self.rebuildNeeded = True
 
-        self.rebuildNeeded = len(updatedTemplates) > 0
         if not self.rebuildNeeded:
             return
 
@@ -50,7 +50,13 @@ class Feature(ShermanFeature):
 
         module["__templates__"] = u""
 
-        for path in updatedTemplates:
+        templates = buildutil.dirEntries(modulePath + "/tmpl")
+        for path in templates:
+            if not path.endswith(".moustache.html"):
+                continue
+
+            path = self.projectBuilder.resolveFile(path, modulePath + "/tmpl")
+
             template = None
             templateId = None
             for line in module[path].splitlines():
