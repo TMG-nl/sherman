@@ -37,7 +37,7 @@ class Feature(ShermanFeature):
                 continue
 
             path = self.projectBuilder.resolveFile(path, modulePath + "/tmpl")
-            contents = self.projectBuilder.modifiedFiles.read(locale, modulePath + "/" + path)
+            contents = self.projectBuilder.modifiedFiles.read(locale, path)
             if contents:
                 module[path] = contents
                 updatedTemplates.append(path)
