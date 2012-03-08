@@ -214,8 +214,14 @@ class ProjectBuilder(object):
         class ProjectServerRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
             def do_GET(self):
                 try:
-                    if self.path == "/":
-                        self.path = "/cgi-bin/index.py"
+                    search = ""
+                    path = self.path
+                    qi = path.find("?")
+                    if qi > -1:
+                        search = path[qi:]
+                        path = path[0:qi]
+                    if path == "/":
+                        self.path = "/cgi-bin/index.py" + search
                         builder.loadProjectManifest()
                         shutil.copy(builder.config.projectManifest, builder.buildDir)
                         builder.build()
