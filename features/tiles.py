@@ -23,6 +23,12 @@ class Feature(ShermanFeature):
 
         if not tilesIncluded:
             manifest["sources"].append({
+                "path": "/features/tiles/routes.js"
+            })
+            manifest["sources"].append({
+                "path": "/features/tiles/history.js"
+            })
+            manifest["sources"].append({
                 "path": "/features/tiles/tiles.js"
             })
             manifest["sources"].append({

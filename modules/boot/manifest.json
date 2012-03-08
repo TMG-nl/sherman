@@ -17,9 +17,6 @@
         { "path": "logging.js", "inline": true },
         { "path": "useragent.js" },
         { "path": "async.js", "inline": true },
-        { "path": "modules.js", "inline": true },
-        { "path": "routes.js" },
-        { "path": "history.js" },
         { "path": "events.js" },
         { "path": "profiling.js" }
     ],

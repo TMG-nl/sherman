@@ -23,7 +23,7 @@
                 { "name": "base64" },
                 { "name": "statics" },
                 { "name": "namespace" },
-                { "name": "stringify" }
+                { "name": "modules" }
             ]
         },
         "debugging": {
@@ -39,7 +39,8 @@
                 { "name": "sass" },
                 { "name": "base64" },
                 { "name": "statics" },
-                { "name": "namespace" }
+                { "name": "namespace" },
+                { "name": "modules", "options": { "stringify": false } }
             ]
         },
         "distribution": {
@@ -55,7 +56,7 @@
                 { "name": "statics" },
                 { "name": "namespace" },
                 { "name": "minify" },
-                { "name": "stringify" },
+                { "name": "modules" },
                 { "name": "tarball" }
             ]
         }

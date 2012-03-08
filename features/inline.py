@@ -29,7 +29,8 @@ class Feature(ShermanFeature):
                 inlineModule[path] = bootModule[path]
                 del bootModule[path]
 
-                inlineModule["__manifest__"]["sources"].append(source)
+                if not source in inlineModule["__manifest__"]["sources"]:
+                    inlineModule["__manifest__"]["sources"].append(source)
                 movedSources.append(source)
         for source in movedSources:
             bootModule["__manifest__"]["sources"].remove(source)
