@@ -20,7 +20,6 @@
         { "path": "modules.js", "inline": true },
         { "path": "routes.js" },
         { "path": "history.js" },
-        { "path": "tiles.js" },
         { "path": "events.js" },
         { "path": "profiling.js" }
     ],

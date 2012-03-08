@@ -451,12 +451,19 @@ var Tiles = function() {
         params = (params === undefined) ? {} : (params === false ? { "tileId": Number.randomId(16) } : params);
 
         modalLevel++;
+
+        if (modalLevel > 1) {
+            var backButtonText = "BACK";
+        } else {
+            var backButtonText = "CANCEL";
+        }
+
         var item = {
             "name": tileName,
             "params": params,
             "data": data,
             "modal": true,
-            "backButtonText": params.backButtonText || "BACK",
+            "backButtonText": params.backButtonText || backButtonText,
             "modalLevel": modalLevel,
             "promise": promise
         };
@@ -655,48 +662,75 @@ var Tiles = function() {
 
         loadModuleForTile(tileName)
         .then(function() {
-            params = (params === undefined) ? {} : (params === false ? { "tileId": Number.randomId(16) } : params);
+            var result = synchronousInstantiateTile(tileName, params, data);
+            var realizePromise = result.realizePromise;
+            var tile = result.tile;
 
-            var tileKey = getTileKey({ "name": tileName, "params": params });
-            var tileEntry = tileCache[tileKey];
-
-            var tile;
-
-            if (tileEntry) {
-                logging.debug("tile cache hit!");
-                tile = tileEntry.tile;
-                tilePromise.fulfill(tile);
-            } else {
-                if (!NS[tileName]) {
-                    throw new CoreException("Tile \"" + tileName + "\" is undefined, missing from manifest?");
-                }
-
-                var tileDiv = $("<div>");
-
-                tile = NS[tileName](tileDiv[0], params, data);
-                var realizePromise = tile.realize();
-
-                tile._lastupdated = Date.getUnixTimestamp();
-
-                tileEntry = {"tile": tile, "div": tileDiv, "name": tileName, "promise": promise};
-                logging.debug("tile cache miss!");
-                tileCache[tileKey] = tileEntry;
-
-                if (realizePromise) {
-                    realizePromise.then(function() {
-                        tilePromise.fulfill(tile);
-                    }, function(error) {
-                        tilePromise.fail(error);
-                    });
-                } else {
+            if (realizePromise) {
+                realizePromise.then(function() {
                     tilePromise.fulfill(tile);
-                }
+                }, function(error) {
+                    tilePromise.fail(error);
+                });
+            } else {
+                tilePromise.fulfill(tile);
             }
+            
         }, function(error) {
             tilePromise.fail(error);
         });
 
         return tilePromise;
+    }
+
+
+    /**
+     * Instantiates tile in synchronous operation.
+     * Callee is responsible to load the module containing the tile, if applicable.
+     * Note that the result of the instantiation can still be a promise (ie. if the 
+     * tile's realize function returns a promise).
+     *
+     * @param tileName The name of a tile.
+     * @param params Optional parameters passed to the tile.
+     * @param data Optional data passed to the tile.
+     * @param promise Optional promise which will be fulfilled when the tile is
+     *                dismissed.
+     * @return object Object {tile, realizePromise} containing the instantiated tile and
+     *                its realize promise if applicable
+     */
+    function synchronousInstantiateTile(tileName, params, data, promise) {
+            
+        params = (params === undefined) ? {} : (params === false ? { "tileId": Number.randomId(16) } : params);
+
+        var tileKey = getTileKey({ "name": tileName, "params": params });
+        var tileEntry = tileCache[tileKey];
+
+        var tile, realizePromise;
+
+        if (tileEntry) {
+            logging.debug("tile cache hit!");
+            tile = tileEntry.tile;
+        } else {
+            if (!NS[tileName]) {
+                throw new CoreException("Tile \"" + tileName + "\" is undefined, missing from manifest?");
+            }
+
+            var tileDiv = $("<div>");
+
+            tile = NS[tileName](tileDiv[0], params, data);
+            realizePromise = tile.realize();
+
+            tile._lastupdated = Date.getUnixTimestamp();
+
+            tileEntry = {"tile": tile, "div": tileDiv, "name": tileName, "promise": promise};
+            logging.debug("tile cache miss!");
+            tileCache[tileKey] = tileEntry;
+        }
+
+        return {
+            "tile": tile,
+            "realizePromise": realizePromise
+        };
     }
 
     /**
@@ -856,8 +890,10 @@ var Tiles = function() {
         var transitionParams = { "direction": activationParams.direction, "modal": item.modal, "modalLevel": item.modalLevel, "backButtonText": item.backButtonText };
         transitionStart(container, transitionParams);
 
-        var instantiateTilePromise = instantiateTile(item.name, item.params, item.data, item.promise);
-        instantiateTilePromise.then(function(tile) {
+
+        // will be called after we instantiate the tile below
+        // makes it easy to implement async and sync tile instantiation strategies
+        function afterInstantiateTile(tile) {
             var tileKey = getTileKey(item);
             var tileEntry = tileCache[tileKey];
 
@@ -870,9 +906,21 @@ var Tiles = function() {
                 GapUtility.forceRepaint();
             }
             Profiling.stop(item.name, profilingToken);
-        });
+        }
 
-        return instantiateTilePromise;
+        if (NS.hasOwnProperty(item.name) && NS[item.name].synchronous) {
+            var result = synchronousInstantiateTile(item.name, item.params, item.data, item.promise);
+            afterInstantiateTile(result.tile);
+            return true; // TODO: check if we can use Future.promise().fulfill() here
+        } else {
+
+            var instantiateTilePromise = instantiateTile(item.name, item.params, item.data, item.promise);
+            instantiateTilePromise.then(function(tile) {
+                afterInstantiateTile(tile);
+            });
+
+            return instantiateTilePromise;
+        }
     }
 
     // these constants and variables are specific to the timeoutInvalidationStrategy
