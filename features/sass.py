@@ -18,6 +18,7 @@ class Feature(ShermanFeature):
         self.cssparser = cssparser
         self.scsscompiler = scsscompiler
 
+    @ShermanFeature.priority(60)
     def sourcesLoaded(self, locale, moduleName, modulePath):
         module = self.currentBuild.files[locale][moduleName]
 

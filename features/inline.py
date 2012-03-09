@@ -35,10 +35,15 @@ class Feature(ShermanFeature):
         for source in movedSources:
             bootModule["__manifest__"]["sources"].remove(source)
 
-        for featureName in self.projectBuilder.featureList:
-            try:
-                self.projectBuilder.features[featureName].sourcesLoaded(locale, "inline", modulePath)
-            except Exception, exception:
-                raise BuildError("Exception in feature %s" % featureName, exception)
+        self.projectBuilder.invokeFeatures("sourcesLoaded", locale, "inline", modulePath)
 
         self.projectBuilder.concatenateSources(locale, "inline", modulePath)
+
+    def generateBootstrapCode(self, locale, bootstrapCode):
+        bootstrapCode["head"] = (
+            "%(inlineJs)s"
+            "%(head)s"
+        ) % {
+            "inlineJs": self.currentBuild.files[locale]["inline"]["__concat__"],            
+            "head": bootstrapCode["head"]
+        }

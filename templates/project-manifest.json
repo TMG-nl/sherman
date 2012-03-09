@@ -57,6 +57,7 @@
                 { "name": "namespace" },
                 { "name": "minify" },
                 { "name": "modules" },
+                { "name": "json-index" },
                 { "name": "tarball" }
             ]
         }

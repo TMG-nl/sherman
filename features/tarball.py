@@ -6,7 +6,7 @@ import shutil
 
 class Feature(ShermanFeature):
 
-    def filesWritten(self):
+    def buildFinished(self):
         print "Creating final archive..."
     
         fileName = self.projectBuilder.projectManifest["title"].lower().replace(" ", "-") + ".tar.gz"

@@ -47,7 +47,7 @@ class Feature(ShermanFeature):
         if len(self.tileModuleDependencies[moduleName]) == 0:
             del self.tileModuleDependencies[moduleName]
 
-    def filesWritten(self):
+    def modulesWritten(self):
         for locale in self.projectBuilder.locales:
             module = self.currentBuild.files[locale]["inline"]
 

@@ -6,6 +6,7 @@ import re
 
 class Feature(ShermanFeature):
 
+    @ShermanFeature.priority(70)
     def sourcesLoaded(self, locale, moduleName, modulePath):
         module = self.currentBuild.files[locale][moduleName]
     

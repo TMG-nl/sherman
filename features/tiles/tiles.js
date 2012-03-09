@@ -244,8 +244,8 @@ var Tiles = function() {
 
         if (container.params.getScrollContainer) {
             var scrollElement = container.params.getScrollContainer();
-            $('html').addClass("scrollability");
-            $(scrollElement).css({"overflow": "hidden"});
+            $("html").addClass("scrollability");
+            $(scrollElement).css({ "overflow": "hidden" });
         }
     }
 
@@ -320,7 +320,7 @@ var Tiles = function() {
      * more suitable for passing large amounts of data, since it will be never
      * be JSON-encoded into the tile key.
      *
-     * @return Promise - A promise that is fulfilled when the tile has been activated
+     * @return A promise that is fulfilled when the tile has been activated.
      *
      * @see showTileInContainer(), pushModalTile()
      */
@@ -339,7 +339,8 @@ var Tiles = function() {
      *
      * @param element HTMLElement that is involved in the event.
      * @param tileName string name of the tile to find the targetContainer for.
-     * @return container || false if no container could be found.
+     *
+     * @return The target container or false if no container could be found.
      */
     function getTargetContainerForElement(element, tileName) {
 
@@ -397,7 +398,8 @@ var Tiles = function() {
      * this, data is also more suitable for passing large amounts of data, since
      * it will be never be JSON-encoded into the tile key.
      *
-     * @return Promise A promise which will be fulfilled when the tile has been activated
+     * @return A promise which will be fulfilled when the tile has been
+     *         activated.
      *
      * @see showTile(), pushModalTile()
      */
@@ -438,7 +440,7 @@ var Tiles = function() {
      *
      * @return A promise that's fulfilled when the tile is dismissed. A
      *         reference to the tile instance will be given as parameter to the
-     *         fulfill-handler.
+     *         fulfill handler.
      *
      * @see showTile(), showTileInContainer()
      */
@@ -468,11 +470,11 @@ var Tiles = function() {
             "promise": promise
         };
 
-        activateTile(containers[0], item, {direction: "forward"});
+        activateTile(containers[0], item, { "direction": "forward" });
 
         if (UserAgent.supports("scrollability")) {
             var scrollContainer = $($("#modal").children()[1]);
-            scrollContainer.css({"overflow": "hidden"});
+            scrollContainer.css({ "overflow": "hidden" });
             $(scrollContainer.children()[0]).addClass("scrollable").addClass("vertical");
         }
 
@@ -639,13 +641,13 @@ var Tiles = function() {
     /**
      * Instantiates a tile in the background.
      *
-     *
      * <p>This method is useful when you want to be sure that a certain tile is
      * instantiated and available, even if you do not want to show it (yet).
-     * It will automatically load the module in which the tile is defined. Because
-     * this is an async operation, a promise will be returned by this method which will
-     * be fulfilled when the module has been loaded.
-     *
+     * 
+     * <p>The module in which the tile is defined will automatically be loaded
+     * if necessary. Because this is an asynchronous operation, a promise will
+     * be returned by this method which will be fulfilled when the module has
+     * been loaded.
      *
      * @param tileName The name of a tile.
      * @param params Optional parameters passed to the tile.
@@ -653,8 +655,9 @@ var Tiles = function() {
      * @param promise Optional promise which will be fulfilled when the tile is
      *                dismissed.
      *
-     * @return  promise Promise that will be fulfilled when the tile (and its module/dependencies
-     *                  has been loaded. The result of the promise will be the tile instance.
+     * @return Promise that will be fulfilled when the tile (and its
+     *         module/dependencies) has been loaded. The result of the promise
+     *         will be the tile instance.
      */
     function instantiateTile(tileName, params, data, promise) {
 
@@ -675,7 +678,6 @@ var Tiles = function() {
             } else {
                 tilePromise.fulfill(tile);
             }
-            
         }, function(error) {
             tilePromise.fail(error);
         });
@@ -683,8 +685,9 @@ var Tiles = function() {
         return tilePromise;
     }
 
-
     /**
+     * @private
+     * 
      * Instantiates tile in synchronous operation.
      * Callee is responsible to load the module containing the tile, if applicable.
      * Note that the result of the instantiation can still be a promise (ie. if the 
@@ -695,8 +698,8 @@ var Tiles = function() {
      * @param data Optional data passed to the tile.
      * @param promise Optional promise which will be fulfilled when the tile is
      *                dismissed.
-     * @return object Object {tile, realizePromise} containing the instantiated tile and
-     *                its realize promise if applicable
+     * @return Object {tile, realizePromise} containing the instantiated tile and
+     *         its realize promise if applicable
      */
     function synchronousInstantiateTile(tileName, params, data, promise) {
             
@@ -722,7 +725,7 @@ var Tiles = function() {
 
             tile._lastupdated = Date.getUnixTimestamp();
 
-            tileEntry = {"tile": tile, "div": tileDiv, "name": tileName, "promise": promise};
+            tileEntry = { "tile": tile, "div": tileDiv, "name": tileName, "promise": promise };
             logging.debug("tile cache miss!");
             tileCache[tileKey] = tileEntry;
         }
@@ -806,7 +809,7 @@ var Tiles = function() {
 
     function getItem(tileName, params) {
 
-        return {"name": tileName, "params": params};
+        return { "name": tileName, "params": params };
     }
 
     function getTileKey(historyItem) {
@@ -890,7 +893,6 @@ var Tiles = function() {
         var transitionParams = { "direction": activationParams.direction, "modal": item.modal, "modalLevel": item.modalLevel, "backButtonText": item.backButtonText };
         transitionStart(container, transitionParams);
 
-
         // will be called after we instantiate the tile below
         // makes it easy to implement async and sync tile instantiation strategies
         function afterInstantiateTile(tile) {
@@ -913,7 +915,6 @@ var Tiles = function() {
             afterInstantiateTile(result.tile);
             return true; // TODO: check if we can use Future.promise().fulfill() here
         } else {
-
             var instantiateTilePromise = instantiateTile(item.name, item.params, item.data, item.promise);
             instantiateTilePromise.then(function(tile) {
                 afterInstantiateTile(tile);

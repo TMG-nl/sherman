@@ -7,6 +7,7 @@ moduleReplacer = re.compile(r"^ *Modules\.", flags = re.MULTILINE)
 
 class Feature(ShermanFeature):
 
+    @ShermanFeature.priority(90)
     def sourcesLoaded(self, locale, moduleName, modulePath):
         module = self.currentBuild.files[locale][moduleName]
         namespace = module["__manifest__"]["namespace"]
@@ -27,6 +28,7 @@ class Feature(ShermanFeature):
             js = functionReplacer.sub(r"%s.\1 = function \1(" % namespace, js)
             module[path] = js
 
+    @ShermanFeature.priority(90)
     def sourcesConcatenated(self, locale, moduleName, modulePath):
         if moduleName == "inline":
             return
@@ -58,3 +60,45 @@ class Feature(ShermanFeature):
                   "with (%s) {\n%s\n}\n" % (bootNsPrefix, moduleNs, moduleNs, moduleNs, moduleNs, moduleNs, moduleNs, js))
 
         module["__concat__"] = js
+
+    @ShermanFeature.priority(90)
+    def generateBootstrapCode(self, locale, bootstrapCode):
+        bootNs = self.currentBuild.files[locale]["boot"]["__manifest__"]["namespace"]
+        if "core" in self.currentBuild.files[locale]:
+            coreNs = self.currentBuild.files[locale]["core"]["__manifest__"]["namespace"]
+            if bootNs == coreNs:
+                coreNsPrefix = ""
+            else:
+                coreNsPrefix = coreNs + "."
+            initModules = "[\"boot\",\"core\"]"
+        else:
+            # there is no core module, so assume we can
+            # fit it all into a single boot module
+            coreNs = bootNs
+            coreNsPrefix = ""
+            initModules = "\"boot\""
+
+        bootstrapCode["head"] = (
+            "var %(bootNs)s=%(bootNs)s||{};"
+            "with(%(bootNs)s){"
+            "%(head)s"
+        ) % {
+            "bootNs": bootNs,
+            "head": bootstrapCode["head"]
+        }
+
+        bootstrapCode["body"] = (
+            "with(%(bootNs)s){"
+            "%(body)s"
+            "}"
+        ) % {
+            "bootNs": bootNs,
+            "body": bootstrapCode["body"].replace("Application", coreNsPrefix + "Application")
+        }
+
+        bootstrapCode["tail"] = (
+            "%(tail)s"
+            "/*end namespace*/}"
+        ) % {
+            "tail": bootstrapCode["tail"]
+        }

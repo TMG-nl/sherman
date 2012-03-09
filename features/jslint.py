@@ -61,6 +61,7 @@ class JSLint(object):
 
 class Feature(ShermanFeature):
 
+    @ShermanFeature.priority(10)
     def manifestLoaded(self, moduleName, modulePath):
         defaultLocale = self.projectBuilder.projectManifest["defaultLocale"]
         module = self.currentBuild.files[defaultLocale][moduleName]

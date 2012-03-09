@@ -15,6 +15,7 @@ class Feature(ShermanFeature):
 
     rebuildNeeded = False
 
+    @ShermanFeature.priority(10)
     def sourcesLoaded(self, locale, moduleName, modulePath):
         self.rebuildNeeded = False
 
@@ -47,6 +48,7 @@ class Feature(ShermanFeature):
     def isRebuildNeeded(self, locale, moduleName, modulePath):
         return self.rebuildNeeded
 
+    @ShermanFeature.priority(10)
     def sourcesConcatenated(self, locale, moduleName, modulePath):
         print "    Applying translations..."
 

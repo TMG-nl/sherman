@@ -75,7 +75,6 @@ class ProjectBuilder(object):
 
         self.rebuildNeeded = False
 
-        self.featureList = []
         self.features = {}
 
         class ModifiedFiles(object):
@@ -164,10 +163,8 @@ class ProjectBuilder(object):
 
         paths = [self.projectDir + "/features", self.shermanDir + "/features"]
 
-        self.featureList = []
         for feature in self.target["features"]:
             featureName = feature["name"]
-            self.featureList.append(featureName)
 
             if featureName in self.features:
                 continue # already loaded
@@ -194,6 +191,29 @@ class ProjectBuilder(object):
                     f.close()
 
             print "Enabled feature: %s" % featureName
+
+    def invokeFeatures(self, hookName, *args):
+        hooks = []
+        for featureName in self.features:
+            feature = self.features[featureName]
+            if hookName in feature.__class__.__dict__:
+                function = feature.__class__.__dict__[hookName]
+            else:
+                for base in feature.__class__.__bases__:
+                    if hookName in base.__dict__:
+                        function = base.__dict__[hookName]
+                        break
+            hooks.append((function.priority if "priority" in function.func_dict else shermanfeature.DEFAULT_PRIORITY,
+                          featureName, (feature, function)))
+
+        hooks = sorted(hooks, key = lambda hook: hook[0]) 
+
+        for hook in hooks:
+            (priority, featureName, (feature, function)) = hook
+            try:
+                function(feature, *args)
+            except Exception, exception:
+                raise BuildError("Exception in feature %s" % featureName, exception)
 
     def serve(self):
         self.verbose = False
@@ -265,16 +285,14 @@ class ProjectBuilder(object):
         for module in self.modules:
             self.buildModule(module["name"])
 
-        for featureName in self.featureList:
-            try:
-                self.features[featureName].filesWritten()
-            except Exception, exception:
-                raise BuildError("Exception in feature %s" % featureName, exception)
+        self.invokeFeatures("modulesWritten")
 
         for locale in self.locales:
             bootHash = self.writeBootHtml(locale)
 
             self.writeVersionFile("__version__", locale, bootHash)
+
+        self.invokeFeatures("buildFinished")
 
         print "Done."
 
@@ -301,14 +319,10 @@ class ProjectBuilder(object):
 
         print "Building module %s..." % moduleName 
 
-        for featureName in self.featureList:
-            try:
-                defaultLocale = self.projectManifest["defaultLocale"]
-                manifest = self.currentBuild.files[defaultLocale][moduleName]["__manifest__"]
-                self.features[featureName].manifestLoaded(moduleName, modulePath, manifest)
-            except Exception, exception:
-                raise BuildError("Exception in feature %s" % featureName, exception)
-
+        defaultLocale = self.projectManifest["defaultLocale"]
+        manifest = self.currentBuild.files[defaultLocale][moduleName]["__manifest__"]
+        self.invokeFeatures("manifestLoaded", moduleName, modulePath, manifest)
+        
         for locale in self.locales:
             print "  Processing locale %s..." % locale
 
@@ -352,17 +366,13 @@ class ProjectBuilder(object):
         if self.rebuildNeeded:
             print "    Loaded JavaScript..."
 
-        for featureName in self.featureList:
-            try:
-                self.features[featureName].sourcesLoaded(locale, moduleName, modulePath)
-            except Exception, exception:
-                raise BuildError("Exception in feature %s" % featureName, exception)
+        self.invokeFeatures("sourcesLoaded", locale, moduleName, modulePath)
 
     def isRebuildNeeded(self, locale, moduleName, modulePath):
         if self.rebuildNeeded:
             return True
 
-        for featureName in self.featureList:
+        for featureName in self.features:
             try:
                 if self.features[featureName].isRebuildNeeded(locale, moduleName, modulePath):
                     return True
@@ -397,11 +407,7 @@ class ProjectBuilder(object):
         except Exception, exception:
             raise BuildError("Could not concatenate sources for module %s" % moduleName, exception)
 
-        for featureName in self.featureList:
-            try:
-                self.features[featureName].sourcesConcatenated(locale, moduleName, modulePath)
-            except Exception, exception:
-                raise BuildError("Exception in feature %s" % featureName, exception)
+        self.invokeFeatures("sourcesConcatenated", locale, moduleName, modulePath)
 
     def writeFiles(self, locale, moduleName, modulePath):
         print "    Writing output file..."
@@ -418,59 +424,33 @@ class ProjectBuilder(object):
             raise BuildError("Could not write output file for module %s" % moduleName, exception)
 
     def writeBootHtml(self, locale):
-        bootNs = self.currentBuild.files[locale]["boot"]["__manifest__"]["namespace"]
-        coreNs = self.currentBuild.files[locale]["core"]["__manifest__"]["namespace"]
-        if bootNs == coreNs:
-            coreNsPrefix = ""
-        else:
-            coreNsPrefix = coreNs + "."
-
-        resources = {}
-        for module in self.modules:
-            moduleName = module["name"]
-            module = self.currentBuild.files[locale][moduleName]
-
-            jsFileName = None
-            for fileName in module["__output__"]:
-                if fileName.endswith(".js"):
-                    jsFileName = fileName
-            if not jsFileName:
-                raise BuildError("Module %s did not generate a JavaScript output file" % moduleName)
-
-            resources[moduleName] = {}
-            resources[moduleName][locale] = jsFileName
-            resources[moduleName]["dependencies"] = module["__manifest__"]["dependencies"]
-
-            if "essential" in module["__manifest__"] and module["__manifest__"]["essential"]:
-                resources[moduleName]["essential"] = True
+        bootstrapCode = {
+            "head": "",
+            "body": "Application.init([config])",
+            "tail": ""
+        }
+        self.invokeFeatures("generateBootstrapCode", locale, bootstrapCode)
 
         headJs = (
             "try{document.domain='%(domain)s'}catch(e){}"
             "function giveUp(e){var a=confirm('Het spijt me te moeten zeggen dat %(title)s niet kon opstarten. Zullen we het opnieuw proberen?');"
             r"if(a){window.location.reload()}else{document.body.innerHTML='<h1>'+e+'</h1><p><button onclick=\"window.location.reload()\">Verfrissen</button></p>'}}"
             "try{"
-            "var %(bootNs)s=%(bootNs)s||{};"
-            "with(%(bootNs)s){"
-            "%(inlineJs)s"
-            "%(bootNs)s.go=function(){"
-            "Modules.config(\"[static_base]\",\"%(locale)s\",%(resources)s);"
-            "Modules.load([\"boot\",\"core\"]).then(function(){"
-            "%(coreNsPrefix)sApplication.init([config])"
-            "})"
+            "%(head)s"
+            "function go(){"
+            "%(body)s"
             "}"
-            "}"
+            "%(tail)s"
             "}catch(e){giveUp(e)}"
         ) % {
             "domain": self.projectManifest["domain"],
             "title": self.projectManifest["title"],
-            "bootNs": bootNs,
-            "inlineJs": self.currentBuild.files[locale]["inline"]["__concat__"],
-            "coreNsPrefix": coreNsPrefix,
-            "locale": locale,
-            "resources": json.dumps(resources).replace(" ", "")
+            "head": bootstrapCode["head"],
+            "body": bootstrapCode["body"],
+            "tail": bootstrapCode["tail"]
         }
 
-        onloadJs = "try{%s.go()}catch(e){giveUp(e)}" % bootNs
+        onloadJs = "try{go()}catch(e){giveUp(e)}"
 
         # icing on the cake, include your favorite icon in the HTML
         favicon = buildutil.base64EncodeImage(self.projectDir + "/boot/favicon.ico")

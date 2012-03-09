@@ -14,15 +14,15 @@ var Routes = function() {
      * @param tile A tile instance.
      *
      * @return The path corresponding to the tile, or null if the tile does not
-     *          define a path.
+     *         define a path.
      */
     function tileToPath(tile) {
 
         var hashQuery = {};
 
-        if (window.location.hash.indexOf('?') !== -1) {
+        if (window.location.hash.indexOf("?") !== -1) {
             // Do not throw away any parameters passed as arguments to the hash
-            var search = window.location.hash.substr(1 + window.location.hash.indexOf('?'));
+            var search = window.location.hash.substr(window.location.hash.indexOf("?") + 1);
             hashQuery = $.deparam(search);
         }
 
@@ -38,7 +38,7 @@ var Routes = function() {
      * Maps the current window location to a tile name and optional parameters.
      * Since this could involve loading a module, this is an async method.
      *
-     * @return Promise Promise that will be fulfilled with object containing the tile
+     * @return Promise that will be fulfilled with object containing the tile
      *         name and parameters, or null if the path cannot be mapped.
      *
      * @see mapPath()
@@ -54,9 +54,6 @@ var Routes = function() {
             if (index > 0) {
                 path = path.substr(0, index);
             }
-            if (path === "/je/moeder") { // present for Tjerk ;)
-                path = "/profile/00fec2a528c91f235b7e8967377db76c88";
-            }
         } else {
             path = location.hash.substring(1);
         }
@@ -70,7 +67,7 @@ var Routes = function() {
      *
      * @param path The path to map.
      *
-     * @return Promise Promise that will be fulfilled with object containing the tile
+     * @return Promise that will be fulfilled with object containing the tile
      *         name and parameters, or null if the path cannot be mapped.
      *
      * @example
@@ -89,7 +86,7 @@ var Routes = function() {
         Tiles.loadModuleForTile(tileName)
         .then(function() {
             if (NS[tileName].hasOwnProperty("mapPath")) {
-                 mapPromise.fulfill({"tileName": tileName, "params": NS[tileName].mapPath(path)});
+                mapPromise.fulfill({ "tileName": tileName, "params": NS[tileName].mapPath(path) });
             } else {
                 mapPromise.fulfill(null);
             }

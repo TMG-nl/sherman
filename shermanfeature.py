@@ -1,3 +1,7 @@
+
+DEFAULT_PRIORITY = 50
+
+
 class Options:
     def __init__(self, projectDir = None, shermanDir = None, buildDir = None, projectBuilder = None, featureOptions = None):
         self.projectDir = projectDir
@@ -29,5 +33,18 @@ class ShermanFeature(object):
     def sourcesConcatenated(self, locale, moduleName, modulePath):
         pass
 
-    def filesWritten(self):
+    def modulesWritten(self):
         pass
+
+    def generateBootstrapCode(self, locale, bootstrapCode):
+        return bootstrapCode
+
+    def buildFinished(self):
+        pass
+
+    @staticmethod
+    def priority(prio):
+        def setPriority(func):
+            func.priority = prio
+            return func
+        return setPriority
