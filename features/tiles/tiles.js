@@ -665,7 +665,7 @@ var Tiles = function() {
             var realizePromise = result.realizePromise;
             var tile = result.tile;
 
-            if (realizePromise) {
+            if (realizePromise && realizePromise !== true) {
                 realizePromise.then(function() {
                     tilePromise.fulfill(tile);
                 }, function(error) {
@@ -906,7 +906,7 @@ var Tiles = function() {
             Profiling.stop(item.name, profilingToken);
         }
 
-        if (NS.hasOwnProperty(item.name) && NS[item.name].synchronous) {
+        if (NS.hasOwnProperty(item.name) && NS[item.name].synchronous !== false) {
             var result = synchronousInstantiateTile(item.name, item.params, item.data, item.promise);
             afterInstantiateTile(result.tile);
             return true; // TODO: check if we can use Future.promise().fulfill() here
