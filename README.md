@@ -29,6 +29,7 @@ loaded at runtime:
 - modules: Provides a module loader
 - statics: Copy versioned static files into the build
 - i18n: Apply translations to all JavaScript sources and templates
+- minify: Minify JavaScript sources
 - jslint: Perform jslint checks on modified JavaScript files
 
 For more information about specific features, see below.
@@ -218,6 +219,11 @@ Translations should be specified in a module's i18n/translations.json file.
 
 Runtime translations are performed using the i18n() function, defined in
 modules/boot/util.js.
+
+### minify
+
+This feature minifies all concatenated JavaScript using the Google Closure
+compiler (https://developers.google.com/closure/compiler/).
 
 ### jslint
 
