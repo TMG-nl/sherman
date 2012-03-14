@@ -166,11 +166,13 @@ also be shared between modules.
 Fundamentally, the namespace is realized by putting a block like this around
 a module's concatenated source:
 
+```javascript
 var MyNamespace = MyNamespace || {};
 MyNamespace.NS = MyNamespace;
 with(MyNamespace) {
 ...
 }
+```
 
 For the code within the with-block, all global declarations are rewritten so
 that they are assigned to the namespace object. This helps to avoid polluting
