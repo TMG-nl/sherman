@@ -10,6 +10,11 @@ except ImportError:
 
 class Feature(ShermanFeature):
 
+    def __init__(self, options):
+        ShermanFeature.__init__(self, options)
+
+        self.projectBuilder.features["modules-helper"] = HelperFeature(options)
+
     def manifestLoaded(self, moduleName, modulePath, manifest):
         if moduleName != "boot":
             return
@@ -42,7 +47,10 @@ class Feature(ShermanFeature):
 
         js = module["__concat__"]
 
-        if not "stringify" in self.options or self.options["stringify"]:
+        doStringify = ((not "stringify" in self.options or self.options["stringify"]) and
+                       not (moduleName == "boot" and not "inline" in self.projectBuilder.features)) 
+
+        if doStringify:
             if moduleName == "boot":
                 js = "try{%s.Modules.addModule(\"%s\",'%s')}catch(e){giveUp(e)}" % (bootNs, moduleName, buildutil.jsStringEscape(js))
             else:
@@ -80,6 +88,7 @@ class Feature(ShermanFeature):
             if "essential" in module["__manifest__"] and module["__manifest__"]["essential"]:
                 resources[moduleName]["essential"] = True
 
+        resources = json.dumps(resources).replace(", ", ",").replace(": ", ":")
         bootstrapCode["body"] = (
             "Modules.config(\"[static_base]\",\"%(locale)s\",%(resources)s);"
             "Modules.load(%(initModules)s).then(function(){"
@@ -87,7 +96,19 @@ class Feature(ShermanFeature):
             "})"
         ) % {
            "locale": locale,
-           "resources": json.dumps(resources),
+           "resources": resources,
            "initModules": initModules,
            "body": bootstrapCode["body"]
         }
+
+
+class HelperFeature(ShermanFeature):
+
+    @ShermanFeature.priority(70)
+    def sourcesConcatenated(self, locale, moduleName, modulePath):
+        if moduleName == "boot" or moduleName == "inline":
+            return
+
+        module = self.currentBuild.files[locale][moduleName]
+        module["__concat__"] = ("Modules.%s = {};\n"
+                                "%s" % (moduleName, module["__concat__"]))

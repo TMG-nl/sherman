@@ -3,6 +3,7 @@ DEFAULT_PRIORITY = 50
 
 
 class Options:
+
     def __init__(self, projectDir = None, shermanDir = None, buildDir = None, projectBuilder = None, featureOptions = None):
         self.projectDir = projectDir
         self.shermanDir = shermanDir

@@ -3,8 +3,6 @@ from shermanfeature import ShermanFeature
 import re
 
 
-moduleReplacer = re.compile(r"^ *Modules\.", flags = re.MULTILINE)
-
 class Feature(ShermanFeature):
 
     @ShermanFeature.priority(90)
@@ -28,7 +26,7 @@ class Feature(ShermanFeature):
             js = functionReplacer.sub(r"%s.\1 = function \1(" % namespace, js)
             module[path] = js
 
-    @ShermanFeature.priority(90)
+    @ShermanFeature.priority(80)
     def sourcesConcatenated(self, locale, moduleName, modulePath):
         if moduleName == "inline":
             return
@@ -37,27 +35,19 @@ class Feature(ShermanFeature):
 
         bootNs = self.currentBuild.files[locale]["boot"]["__manifest__"]["namespace"]
         moduleNs = module["__manifest__"]["namespace"]
-        if bootNs == moduleNs:
-            bootNsPrefix = ""
-        else:
-            bootNsPrefix = bootNs + "."
 
         js = module["__concat__"]
 
-        if moduleName == "boot":
+        if moduleName == "boot" or bootNs != moduleNs:
+            if bootNs != moduleNs and "modules" in self.projectBuilder.features:
+                moduleReplacer = re.compile(r"^ *Modules\.", flags = re.MULTILINE)
+                js = moduleReplacer.sub("%sModules." % (bootNs + "."), js)
             js = ("var %s = %s || {};\n"
                   "%s.NS = %s;\n"
-                  "with (%s) {\n%s\n}\n") % (bootNs, bootNs, bootNs, bootNs, bootNs, js)
-        elif bootNs == moduleNs:
-            js = ("with (%s) {\n"
-                  "Modules.%s = {};\n"
-                  "%s\n}\n" % (moduleNs, moduleName, js))
+                  "with (%s) {\n%s\n}\n" % (moduleNs, moduleNs, moduleNs, moduleNs, moduleNs, js))
         else:
-            js = moduleReplacer.sub(r"%sModules." % bootNsPrefix, js)
-            js = ("%sModules.%s = {};\n"
-                  "var %s = %s || {};\n"
-                  "%s.NS = %s;\n"
-                  "with (%s) {\n%s\n}\n" % (bootNsPrefix, moduleNs, moduleNs, moduleNs, moduleNs, moduleNs, moduleNs, js))
+            js = ("with (%s) {\n"
+                  "%s\n}\n" % (moduleNs, js))
 
         module["__concat__"] = js
 
@@ -70,13 +60,11 @@ class Feature(ShermanFeature):
                 coreNsPrefix = ""
             else:
                 coreNsPrefix = coreNs + "."
-            initModules = "[\"boot\",\"core\"]"
         else:
             # there is no core module, so assume we can
             # fit it all into a single boot module
             coreNs = bootNs
             coreNsPrefix = ""
-            initModules = "\"boot\""
 
         bootstrapCode["head"] = (
             "var %(bootNs)s=%(bootNs)s||{};"
@@ -98,7 +86,7 @@ class Feature(ShermanFeature):
 
         bootstrapCode["tail"] = (
             "%(tail)s"
-            "/*end namespace*/}"
+            "}"
         ) % {
             "tail": bootstrapCode["tail"]
         }

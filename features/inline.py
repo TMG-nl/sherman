@@ -4,6 +4,7 @@ from shermanfeature import ShermanFeature
 
 class Feature(ShermanFeature):
 
+    @ShermanFeature.priority(10)
     def sourcesLoaded(self, locale, moduleName, modulePath):
         if moduleName != "boot":
             return

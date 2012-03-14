@@ -51,4 +51,5 @@ class Feature(ShermanFeature):
         for locale in self.projectBuilder.locales:
             module = self.currentBuild.files[locale]["inline"]
 
-            module["__concat__"] += "Modules.tileModuleDependencies=%s;" % json.dumps(self.tileModuleDependencies)
+            tileModuleDependencies = json.dumps(self.tileModuleDependencies).replace(", ", ",").replace(": ", ":")
+            module["__concat__"] += "Modules.tileModuleDependencies=%s;" % tileModuleDependencies

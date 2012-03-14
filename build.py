@@ -6,13 +6,12 @@ import base64
 import buildutil
 import codecs
 import imp
-import inspect
-import logging
 import os
 import shutil
 import signal
 import shermanfeature
 import tempfile
+import time
 
 try:
     import json
@@ -20,11 +19,14 @@ except ImportError:
     import simplejson as json
 
 
-logging.basicConfig(level = logging.DEBUG)
+builder = None
 
 
 def onInterrupt(signum, frame):
-    print "Exit."
+    if not builder.config.buildDir:
+        shutil.rmtree(builder.buildDir, ignore_errors = True)
+
+    print "\nExit."
     exit()
 
 
@@ -38,6 +40,10 @@ def parseOptions():
     parser.add_option("", "--port", dest = "port",
                       default = 9090, type = "int",
                       help = "The port on which to run the built-in webserver")
+    parser.add_option("", "--continuous-build", dest = "continuousBuild", action = "store_true",
+                      help = "Keeps building the project continuously (warning: consumes a lot of CPU)")
+    parser.add_option("", "--build-dir", dest = "buildDir",
+                      help = "Specifies the directory to create the build in")
 
     (options, args) = parser.parse_args()
 
@@ -46,6 +52,8 @@ def parseOptions():
         target = None
         serve = False
         port = 9090
+        continuousBuild = False
+        buildDir = ""
 
     config = Config()
     config.projectManifest = os.path.abspath(args[0] if len(args) >= 1 else "project-manifest.json")
@@ -56,6 +64,12 @@ def parseOptions():
 
     config.port = options.port
 
+    if options.continuousBuild:
+        config.continuousBuild = True
+
+    if options.buildDir:
+        config.buildDir = options.buildDir
+
     return config
 
 
@@ -63,10 +77,9 @@ class ProjectBuilder(object):
     def __init__(self, config):
         self.shermanDir = os.path.abspath(os.path.dirname(__file__))
         self.projectDir = os.path.dirname(config.projectManifest)
-        self.buildDir = tempfile.mkdtemp(".build", "sherman.")
+        self.buildDir = config.buildDir or tempfile.mkdtemp(".build", "sherman.")
 
         self.config = config
-        self.verbose = True
 
         self.projectManifest = None
         self.locales = []
@@ -108,10 +121,6 @@ class ProjectBuilder(object):
 
         self.loadProjectManifest()
 
-    def log(self, message, level = logging.INFO):
-        if self.verbose or level >= logging.WARN:
-            logging.log(level, message)
-
     def resolveFile(self, path, directory = ""):
         if path[0] == "/":
             if os.path.exists(self.projectDir + path):
@@ -130,7 +139,7 @@ class ProjectBuilder(object):
 
             self.projectManifest = json.loads(contents)
         except Exception, exception:
-            raise BuildError("Could not load manifest file %s: %s" % (self.config.projectManifest, str(exception)))
+            raise BuildError("Could not load manifest file %s" % self.config.projectManifest, exception)
 
         if not "locales" in self.projectManifest or len(self.projectManifest["locales"]) == 0:
             raise BuildError("No locales defined in manifest file %s" % self.config.projectManifest)
@@ -183,9 +192,9 @@ class ProjectBuilder(object):
                 ))
 
             except ImportError, error:
-                raise BuildError("Could not load feature %s" % featureName, str(error))
+                raise BuildError("Could not load feature %s" % featureName, error)
             except Exception, exception:
-                raise BuildError("Exception while loading feature %s" % featureName, str(exception))
+                raise BuildError("Exception while loading feature %s" % featureName, exception)
             finally:
                 if f:
                     f.close()
@@ -216,8 +225,6 @@ class ProjectBuilder(object):
                 raise BuildError("Exception in feature %s" % featureName, exception)
 
     def serve(self):
-        self.verbose = False
-
         if os.path.exists(self.projectDir + "/cgi-bin"):
             shutil.copytree(self.projectDir + "/cgi-bin", self.buildDir + "/cgi-bin")
         else:
@@ -247,30 +254,30 @@ class ProjectBuilder(object):
                         builder.build()
                     CGIHTTPServer.CGIHTTPRequestHandler.do_GET(self)
                 except BuildError, error:
-                    message = str(error)
-                    if error.originalException:
-                        message += ": " + str(error.originalException)
+                    error.printMessage()
 
                     self.wfile.write("<html>")
                     self.wfile.write("<body>")
                     self.wfile.write("<h1>Build Error</h1>")
-                    self.wfile.write("<pre>%s</pre>" % message)
+                    self.wfile.write("<pre>%s</pre>" % str(error))
                     self.wfile.write("<p>(check console output for more info)</p>")
                     self.wfile.write("</body>")
                     self.wfile.write("</html>")
-
-                    print message
-                    if error.originalTrace:
-                        print "Traceback (most recent call last):"
-                        for frame in error.originalTrace:
-                            print "  File \"%s\", line %s, in %s" % (frame[1], frame[2], frame[3])
 
         print "Serving at http://localhost:%i/" % self.config.port
         httpd = BaseHTTPServer.HTTPServer(("0.0.0.0", self.config.port), ProjectServerRequestHandler)
         httpd.allow_reuse_address = True
         httpd.serve_forever()
 
+    def continuousBuild(self):
+        while True:
+            self.build()
+            time.sleep(1)
+
     def build(self):
+        if not os.path.exists(self.buildDir):
+            os.mkdir(self.buildDir)
+
         self.loadFeatures()
 
         for locale in self.locales:
@@ -317,12 +324,12 @@ class ProjectBuilder(object):
         for prerequisite in self.currentBuild.files[defaultLocale][moduleName]["__manifest__"]["dependencies"]:
             self.buildModule(prerequisite)
 
-        print "Building module %s..." % moduleName 
+        print "Building module %s..." % moduleName
 
         defaultLocale = self.projectManifest["defaultLocale"]
         manifest = self.currentBuild.files[defaultLocale][moduleName]["__manifest__"]
         self.invokeFeatures("manifestLoaded", moduleName, modulePath, manifest)
-        
+
         for locale in self.locales:
             print "  Processing locale %s..." % locale
 
@@ -486,7 +493,12 @@ if __name__ == "__main__":
             signal.signal(signal.SIGINT, onInterrupt)
 
             builder.serve()
+        elif config.continuousBuild:
+            signal.signal(signal.SIGINT, onInterrupt)
+
+            builder.continuousBuild()
         else:
             builder.build()
     except BuildError, error:
-        print "Build Error: " + str(error)
+        error.printMessage()
+        exit(1)

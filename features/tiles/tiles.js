@@ -454,11 +454,7 @@ var Tiles = function() {
 
         modalLevel++;
 
-        if (modalLevel > 1) {
-            var backButtonText = "BACK";
-        } else {
-            var backButtonText = "CANCEL";
-        }
+        var backButtonText = (modalLevel > 1 ? "BACK" : "CANCEL");
 
         var item = {
             "name": tileName,

@@ -62,15 +62,12 @@ class JSLint(object):
 class Feature(ShermanFeature):
 
     @ShermanFeature.priority(10)
-    def manifestLoaded(self, moduleName, modulePath):
-        defaultLocale = self.projectBuilder.projectManifest["defaultLocale"]
-        module = self.currentBuild.files[defaultLocale][moduleName]
-
+    def manifestLoaded(self, moduleName, modulePath, manifest):
         try:
             paths = []
-            for source in module["__manifest__"]["sources"]:
+            for source in manifest["sources"]:
                 if not "runJsLint" in source or source["runJsLint"] == True:
-                    path = modulePath + "/js/" + source["path"]
+                    path = self.projectBuilder.resolveFile(source["path"], modulePath + "/js")
                     paths.append(path)
 
             errors = []

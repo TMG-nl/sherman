@@ -14,10 +14,10 @@ serve_debug:
 	python $(SHERMAN_DIR)/build.py --target=debugging --serve
 
 dist:
-	python $(SHERMAN_DIR)/build.py --target=distribution
+	python $(SHERMAN_DIR)/build.py --target=distribution --build-dir=build
 
 dist_debug:
-	python $(SHERMAN_DIR)/build.py --target=debugging
+	python $(SHERMAN_DIR)/build.py --target=debugging --build-dir=build
 
 reference_docs:
 	java -jar $(SHERMAN_DIR)/other/jsdoc-toolkit/jsrun.jar $(SHERMAN_DIR)/other/jsdoc-toolkit/app/run.js -t=$(SHERMAN_DIR)/other/jsdoc-toolkit/templates/jsdoc -d=docs/html $(DOC_SRCS)

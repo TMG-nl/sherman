@@ -21,8 +21,8 @@ def htmlEscape(text):
 
 """ Escapes a string so that it is safe to embed in a single-quoted JavaScript
     string. """
-def jsStringEscape(text):
-    return text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n")
+def jsStringEscape(text, stripNewLines = False):
+    return text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "" if stripNewLines else "\\n")
 
 extensionToMimeTypeMap = {
     "css": "text/css",
