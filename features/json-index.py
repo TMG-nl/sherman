@@ -1,3 +1,4 @@
+from __future__ import with_statement
 from builderror import BuildError
 from shermanfeature import ShermanFeature
 
