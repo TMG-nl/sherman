@@ -12,6 +12,6 @@ class Feature(ShermanFeature):
             "runJsLint": False
         })
 
-    @ShermanPriority(0)
+    @ShermanFeature.priority(0)
     def manifestLoaded(self, moduleName, modulePath, manifest):
         ShermanFeature.manifestLoaded(self, moduleName, modulePath, manifest)
