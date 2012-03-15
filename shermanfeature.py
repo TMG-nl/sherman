@@ -22,8 +22,20 @@ class ShermanFeature(object):
         self.currentBuild = self.projectBuilder.currentBuild
         self.options = options.featureOptions
 
+        self.additionalBootResources = []
+
     def manifestLoaded(self, moduleName, modulePath, manifest):
-        pass
+        if moduleName != "boot":
+            return
+
+        for resource in self.additionalBootResources:
+            included = False
+            for source in manifest["sources"]:
+                if source["path"].endswith(resource["path"]):
+                    included = True
+                    break
+            if not included:
+                manifest["sources"].append(resource)
 
     def sourcesLoaded(self, locale, moduleName, modulePath):
         pass

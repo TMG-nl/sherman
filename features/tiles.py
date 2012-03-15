@@ -12,28 +12,23 @@ class Feature(ShermanFeature):
 
     tileModuleDependencies = {}
 
-    def manifestLoaded(self, moduleName, modulePath, manifest):
-        if moduleName != "boot":
-            return
+    def __init__(self, options):
+        ShermanFeature.__init__(self, options)
 
-        tilesIncluded = False
-        for source in manifest["sources"]:
-            if source["path"].endswith("tiles/tiles.js"):
-                tilesIncluded = True
+        self.projectBuilder.features["modules-helper"] = HelperFeature(options)
 
-        if not tilesIncluded:
-            manifest["sources"].append({
-                "path": "/features/tiles/routes.js"
-            })
-            manifest["sources"].append({
-                "path": "/features/tiles/history.js"
-            })
-            manifest["sources"].append({
-                "path": "/features/tiles/tiles.js"
-            })
-            manifest["sources"].append({
-                "path": "/features/tiles/progressivetileloader.widget.js"
-            })
+        self.additionalBootResources.append({
+            "path": "/features/tiles/routes.js"
+        })
+        self.additionalBootResources.append({
+            "path": "/features/tiles/history.js"
+        })
+        self.additionalBootResources.append({
+            "path": "/features/tiles/tiles.js"
+        })
+        self.additionalBootResources.append({
+            "path": "/features/tiles/progressivetileloader.widget.js"
+        })
 
     def sourcesLoaded(self, locale, moduleName, modulePath):
         module = self.currentBuild.files[locale][moduleName]

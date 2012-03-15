@@ -11,21 +11,14 @@ class Feature(ShermanFeature):
 
     rebuildNeeded = False
 
-    def manifestLoaded(self, moduleName, modulePath, manifest):
-        if moduleName != "boot":
-            return
+    def __init__(self, config):
+        ShermanFeature.__init__(self, config)
 
-        jqueryTmplIncluded = False
-        for source in manifest["sources"]:
-            if source["path"].endswith("jquery.tmpl.js"):
-                jqueryTmplIncluded = True
-
-        if not jqueryTmplIncluded:
-            manifest["sources"].append({
-                "path": "/features/jquery-tmpl/jquery.tmpl.js",
-                "excludeFromNamespace": True,
-                "runJsLint": False
-            })
+        self.additionalBootResources.append({
+            "path": "/features/jquery-tmpl/jquery.tmpl.js",
+            "excludeFromNamespace": True,
+            "runJsLint": False
+        })
 
     def sourcesLoaded(self, locale, moduleName, modulePath):
         self.rebuildNeeded = False

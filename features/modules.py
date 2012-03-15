@@ -15,26 +15,10 @@ class Feature(ShermanFeature):
 
         self.projectBuilder.features["modules-helper"] = HelperFeature(options)
 
-    def manifestLoaded(self, moduleName, modulePath, manifest):
-        if moduleName != "boot":
-            return
-
-        modulesIncluded = False
-        for source in manifest["sources"]:
-            if source["path"].endswith("modules/modules.js"):
-                modulesIncluded = True
-
-        defaultLocale = self.projectBuilder.projectManifest["defaultLocale"]
-        if not modulesIncluded and "inline" in self.currentBuild.files[defaultLocale]:
-            for source in self.currentBuild.files[defaultLocale]["inline"]["__manifest__"]["sources"]:
-                if source["path"].endswith("modules/modules.js"):
-                    modulesIncluded = True
-
-        if not modulesIncluded:
-            manifest["sources"].append({
-                "path": "/features/modules/modules.js",
-                "inline": True
-            })
+        self.additionalBootResources.append({
+            "path": "/features/modules/modules.js",
+            "inline": True
+        })
 
     @ShermanFeature.priority(100)
     def sourcesConcatenated(self, locale, moduleName, modulePath):

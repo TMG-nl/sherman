@@ -219,13 +219,30 @@ time.
 
 Translations should be specified in a module's i18n/translations.json file.
 
-Runtime translations are performed using the i18n() function, defined in
-modules/boot/util.js.
+By enabling this feature, the file i18n.js will automatically be bundled with
+the boot module. This file contains the i18n() function, which is used for
+performing runtime translations.
+
+### tiles
+
+This features adds support for the Tiles class.
+
+By enabling this feature, the files routes.js, history.js, tiles.js and
+progressivetileloader.widget.js will automatically be bundled with the boot
+module.
 
 ### minify
 
 This feature minifies all concatenated JavaScript using the Google Closure
 compiler (https://developers.google.com/closure/compiler/).
+
+### jquery
+
+This feature includes jQuery into the boot module.
+
+### zepto
+
+This feature includes Zepto.js into the boot module.
 
 ### jslint
 

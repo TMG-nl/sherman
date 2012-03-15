@@ -16,6 +16,7 @@
             "features": [
                 { "name": "i18n" },
                 { "name": "inline" },
+                { "name": "zepto" },
                 { "name": "hogan" },
                 { "name": "tiles" },
                 { "name": "css" },
@@ -33,6 +34,7 @@
             "features": [
                 { "name": "i18n" },
                 { "name": "inline" },
+                { "name": "zepto" },
                 { "name": "hogan" },
                 { "name": "tiles" },
                 { "name": "css" },
@@ -48,6 +50,7 @@
                 { "name": "jslint" },
                 { "name": "i18n" },
                 { "name": "inline" },
+                { "name": "zepto" },
                 { "name": "hogan" },
                 { "name": "tiles" },
                 { "name": "css" },

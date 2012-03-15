@@ -23,18 +23,17 @@ class Feature(ShermanFeature):
             for l in self.projectBuilder.locales:
                 self.currentBuild.files[l]["inline"] = inlineModule
 
-        movedSources = []
         for source in bootModule["__manifest__"]["sources"]:
             if "inline" in source and source["inline"] == True:
                 path = self.projectBuilder.resolveFile(source["path"], modulePath + "/js")
+                if bootModule[path] == "":
+                    continue # already moved
+
                 inlineModule[path] = bootModule[path]
-                del bootModule[path]
+                bootModule[path] = ""
 
                 if not source in inlineModule["__manifest__"]["sources"]:
                     inlineModule["__manifest__"]["sources"].append(source)
-                movedSources.append(source)
-        for source in movedSources:
-            bootModule["__manifest__"]["sources"].remove(source)
 
         self.projectBuilder.invokeFeatures("sourcesLoaded", locale, "inline", modulePath)
 

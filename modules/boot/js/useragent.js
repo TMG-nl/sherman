@@ -37,7 +37,7 @@ var UserAgent = function() {
      * @return true if the name matches the user-agent, false otherwise.
      *
      * @see isIE(), isFirefox(), isSafari(), isChrome(), isOpera(),
-     *      isOperaMini(), isHyvesDesktop()
+     *      isOperaMini()
      */
     function is(name) {
 
@@ -104,16 +104,6 @@ var UserAgent = function() {
     function isOperaMini() {
 
         return is("Opera Mini");
-    }
-
-    /**
-     * Convenience method for checking whether the user is using Hyves Desktop.
-     *
-     * @see is()
-     */
-    function isHyvesDesktop() {
-
-        return is("Hyves Desktop");
     }
 
     /**
@@ -322,17 +312,11 @@ var UserAgent = function() {
     function isHybridContainer() {
 
         return Boolean(
-                /*
-                 * window.device is set from the PhoneGap container. It contains
-                 * these properties:
-                 * {model:, name:, phonegapVersion:, platform:, uuid:}
-                 */
-                (typeof window.device !== "undefined") ||
-                (typeof window.phonegap !== "undefined") ||
-                properties.container ||
-                isNokiaContainer() ||
-                navigator.userAgent.indexOf("HybridContainer") >= 0 // This is provided in the iOS & Android container
-            );
+            (typeof window.device !== "undefined") || // window.device is set from the PhoneGap container
+            (typeof window.phonegap !== "undefined") ||
+            properties.container ||
+            isNokiaContainer()
+        );
     }
 
     /**
@@ -342,7 +326,8 @@ var UserAgent = function() {
      * @return boolean
      */
     function isIOSSpringBoardApp() {
-        return Boolean(navigator.standalone);
+
+        return !!navigator.standalone;
     }
 
     /**
@@ -449,7 +434,6 @@ var UserAgent = function() {
      * Checks whether this is the PhoneGap container for the iPad.
      *
      * @return true if the user-agent is the PhoneGap container for iPad
-     *
      */
     function isIPadContainer() {
 
@@ -460,22 +444,20 @@ var UserAgent = function() {
      * Checks whether this is the PhoneGap container for the iPhone.
      *
      * @return true if the user-agent is the PhoneGap container for iPhone
-     *
      */
     function isIPhoneContainer() {
 
         return isHybridContainer() && isIPhone();
     }
 
-     /**
-     * Checks whether this is the PhoneGap container for IOS.
+    /**
+     * Checks whether this is the PhoneGap container for iOS.
      *
-     * @return true if the user-agent is the PhoneGap container for IOS
-     *
+     * @return true if the user-agent is the PhoneGap container for iOS
      */
     function isIOSContainer() {
 
-        return isIPadContainer() || isIPhoneContainer();
+        return isHybridContainer() && isIOS();
     }
 
 
@@ -501,7 +483,8 @@ var UserAgent = function() {
     }
 
     /**
-     * Checks whether the reported user-agent is an installed Google Chrome Extension
+     * Checks whether the reported user-agent is an installed Google Chrome
+     * Extension.
      *
      * @return true if the user-agent is an installed Google Chrome Extension
      */
@@ -576,9 +559,6 @@ var UserAgent = function() {
      *     <li><strong>scrollability</strong> (ie. the scrollability
      *                                         library)</li>
      *     <li><strong>iscroll</strong> (ie. the iscroll library)</li>
-     *     <li><strong>upload</strong></li>
-     *     <li><strong>contactsync</strong> Contact syncing in the
-     *                                      container.</li>
      *     <li><strong>html5History</strong></li>
      *     <li><strong>keyup</strong> Whether the agent properly reports keyup
      *                                events.</li>
@@ -588,32 +568,23 @@ var UserAgent = function() {
      */
     function supports(capability) {
 
-        // sorry Arend, this cannot be loaded upfront since the information is available later
-        if (capability === "contactsync") {
-            // check the android version in the AndroidManifest.xml in the native project
-            return isAndroidContainer() && window.device && window.device.appVersion && window.device.appVersion >= 21000000;
-        }
-
-        // sorry Arend, this cannot be loaded upfront since the information is available later
-        if (capability === "upload") {
-            // upload in container, and on website only for not IOS
-            return Boolean(navigator.camera) || isAndroidContainer() || !isIOS();
-        }
-
-        if (capability === "camera") {
-            return isIOSContainer();
-        }
-
-        if (capability === "groupchat-push") {
-
-            return UserAgent.isIPhoneContainer();
-        }
-
         if (properties.capabilities.hasOwnProperty(capability)) {
             return properties.capabilities[capability];
         } else {
             return false;
         }
+    }
+
+    /**
+     * Explicitly sets the value for a specific capability to true or false.
+     *
+     * @param capability The capability to check.
+     * @param value Boolean value indicating whether the capability is
+     *              supported.
+     */
+    function setCapability(capability, value) {
+
+        properties.capabilities[capability] = !!value;
     }
 
     /**
@@ -737,9 +708,9 @@ var UserAgent = function() {
         "mobileie": { "type": "mobile", "platform": "Windows", "capabilities": { "keyup": true, "touchScreen": true, "cssPositionFixed": true } },
 
         // hyves-specific stuff
-        "hyves desktop": { "type": "desktop", "browser": "Hyves Desktop", "browserVersion": "", "browserVersionKey": "hyves desktop/" },
         "hyves": { "capabilities": { "hyvesBrand": true } },
         "hyvescontainer": { "container" : true },
+        "hybridcontainer": { "container" : true },
 
         // desktop browsers
         "mozilla": { "type": "desktop" },
@@ -827,10 +798,13 @@ var UserAgent = function() {
     }
 
     function initCustomCapabilities() {
+
         properties.capabilities.touchEvents = hasTouchEventSupport();
-        properties.capabilities.iscroll = isIPhone() && !supports("scrollover");
-        properties.capabilities.scrollability = isIPad() && !supports("scrollover");
-        properties.capabilities.pushnotifications = navigator.push || isAndroidContainer() || window.device;
+        properties.capabilities.iscroll = (isIPhone() && !supports("scrollover"));
+        properties.capabilities.scrollability = (isIPad() && !supports("scrollover"));
+        properties.capabilities.pushnotifications = (navigator.push || isAndroidContainer() || window.device);
+        properties.capabilities.chat = (isIPhoneContainer() || isIPadContainer() || getQueryParam("chat") === "1");
+        properties.capabilities["chat-push"] = (isIPhoneContainer() || isIPadContainer()); 
     }
 
     function processProperties(properties, userAgentString) {
@@ -971,7 +945,6 @@ var UserAgent = function() {
         "isChromeExtension": isChromeExtension,
         "isOpera": isOpera,
         "isOperaMini": isOperaMini,
-        "isHyvesDesktop": isHyvesDesktop,
         "isVersion": isVersion,
         "versionIsAtLeast": versionIsAtLeast,
         "versionIsLessThan": versionIsLessThan,

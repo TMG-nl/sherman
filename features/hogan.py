@@ -11,21 +11,14 @@ class Feature(ShermanFeature):
 
     rebuildNeeded = False
 
-    def manifestLoaded(self, moduleName, modulePath, manifest):
-        if moduleName != "boot":
-            return
+    def __init__(self, config):
+        ShermanFeature.__init__(self, config)
 
-        hoganIncluded = False
-        for source in manifest["sources"]:
-            if source["path"].endswith("hogan/template.js"):
-                hoganIncluded = True
-
-        if not hoganIncluded:
-            manifest["sources"].append({
-                "path": "/features/hogan/template.js",
-                "excludeFromNamespace": True,
-                "runJsLint": False
-            })
+        self.additionalBootResources.append({
+            "path": "/features/hogan/template.js",
+            "excludeFromNamespace": True,
+            "runJsLint": False
+        })
 
     def sourcesLoaded(self, locale, moduleName, modulePath):
         self.rebuildNeeded = False

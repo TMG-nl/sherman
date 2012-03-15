@@ -15,6 +15,13 @@ class Feature(ShermanFeature):
 
     rebuildNeeded = False
 
+    def __init__(self, config):
+        ShermanFeature.__init__(self, config)
+
+        self.additionalBootResources.append({
+            "path": "/features/i18n/i18n.js"
+        })
+
     @ShermanFeature.priority(10)
     def sourcesLoaded(self, locale, moduleName, modulePath):
         self.rebuildNeeded = False
