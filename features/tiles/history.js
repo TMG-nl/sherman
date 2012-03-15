@@ -47,7 +47,7 @@ function History(historyParams) {
         if (useHtml5HistoryApi()) {
             window.addEventListener("popstate", onhashchange, false);
         } else {
-            $(window).hashchange(onhashchange);
+            $(window).bind("hashchange", onhashchange);
         }
     }
 
