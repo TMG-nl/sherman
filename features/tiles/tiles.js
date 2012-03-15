@@ -320,7 +320,8 @@ var Tiles = function() {
      * more suitable for passing large amounts of data, since it will be never
      * be JSON-encoded into the tile key.
      *
-     * @return A promise that is fulfilled when the tile has been activated.
+     * @return true if the tile was shown properly, or false when showing of the
+     *      tile was rejected.
      *
      * @see showTileInContainer(), pushModalTile()
      */
@@ -397,9 +398,6 @@ var Tiles = function() {
      * call, regardless of the data specified in the second call. Because of
      * this, data is also more suitable for passing large amounts of data, since
      * it will be never be JSON-encoded into the tile key.
-     *
-     * @return A promise which will be fulfilled when the tile has been
-     *         activated.
      *
      * @see showTile(), pushModalTile()
      */
@@ -639,11 +637,16 @@ var Tiles = function() {
      *
      * <p>This method is useful when you want to be sure that a certain tile is
      * instantiated and available, even if you do not want to show it (yet).
-     * 
-     * <p>The module in which the tile is defined will automatically be loaded
-     * if necessary. Because this is an asynchronous operation, a promise will
-     * be returned by this method which will be fulfilled when the module has
-     * been loaded.
+     *
+     * <p>By default, tile instantiation is a synchronous operation and is
+     * performed by calling the synchronousInstantiateTile method.
+     * The instantiateTile method is used for asynchronous instantiation
+     * and will be called in the following cases:
+     * 1. The tile exposes the synchronous property as false
+     * 2. The module in which the tile is defined has not been loaded yet, In
+     *    which case the module will automatically be loaded. Because this
+     *    is an asynchronous operation, a promise will be returned by this
+     *    method which will be fulfilled when the module has been loaded.
      *
      * @param tileName The name of a tile.
      * @param params Optional parameters passed to the tile.
@@ -661,19 +664,8 @@ var Tiles = function() {
 
         loadModuleForTile(tileName)
         .then(function() {
-            var result = synchronousInstantiateTile(tileName, params, data);
-            var realizePromise = result.realizePromise;
-            var tile = result.tile;
-
-            if (realizePromise && realizePromise !== true) {
-                realizePromise.then(function() {
-                    tilePromise.fulfill(tile);
-                }, function(error) {
-                    tilePromise.fail(error);
-                });
-            } else {
-                tilePromise.fulfill(tile);
-            }
+            var tile = synchronousInstantiateTile(tileName, params, data);
+            tilePromise.fulfill(tile);
         }, function(error) {
             tilePromise.fail(error);
         });
@@ -683,22 +675,19 @@ var Tiles = function() {
 
     /**
      * @private
-     * 
+     *
      * Instantiates tile in synchronous operation.
      * Callee is responsible to load the module containing the tile, if applicable.
-     * Note that the result of the instantiation can still be a promise (ie. if the 
-     * tile's realize function returns a promise).
      *
      * @param tileName The name of a tile.
      * @param params Optional parameters passed to the tile.
      * @param data Optional data passed to the tile.
      * @param promise Optional promise which will be fulfilled when the tile is
      *                dismissed.
-     * @return Object {tile, realizePromise} containing the instantiated tile and
-     *         its realize promise if applicable
+     * @return Tile the instantiated tile
      */
     function synchronousInstantiateTile(tileName, params, data, promise) {
-            
+
         params = (params === undefined) ? {} : (params === false ? { "tileId": Number.randomId(16) } : params);
 
         var tileKey = getTileKey({ "name": tileName, "params": params });
@@ -717,7 +706,7 @@ var Tiles = function() {
             var tileDiv = $("<div>");
 
             tile = NS[tileName](tileDiv[0], params, data);
-            realizePromise = tile.realize();
+            tile.realize();
 
             tile._lastupdated = Date.getUnixTimestamp();
 
@@ -726,10 +715,7 @@ var Tiles = function() {
             tileCache[tileKey] = tileEntry;
         }
 
-        return {
-            "tile": tile,
-            "realizePromise": realizePromise
-        };
+        return tile;
     }
 
     /**
@@ -907,17 +893,16 @@ var Tiles = function() {
         }
 
         if (NS.hasOwnProperty(item.name) && NS[item.name].synchronous !== false) {
-            var result = synchronousInstantiateTile(item.name, item.params, item.data, item.promise);
-            afterInstantiateTile(result.tile);
-            return true; // TODO: check if we can use Future.promise().fulfill() here
+            var tile = synchronousInstantiateTile(item.name, item.params, item.data, item.promise);
+            afterInstantiateTile(tile);
         } else {
             var instantiateTilePromise = instantiateTile(item.name, item.params, item.data, item.promise);
             instantiateTilePromise.then(function(tile) {
                 afterInstantiateTile(tile);
             });
-
-            return instantiateTilePromise;
         }
+
+        return true;
     }
 
     // these constants and variables are specific to the timeoutInvalidationStrategy
