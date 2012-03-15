@@ -46,7 +46,7 @@ class JSLint(object):
 
         print "  Running jslint for %s" % os.path.basename(path)
 
-        currentDir = os.curdir
+        currentDir = os.getcwd()
         os.chdir(shermanDir)
         cmd = "other/jslint/lint < %s > /dev/null" % path
         result = os.system(cmd)
