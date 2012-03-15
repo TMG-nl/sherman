@@ -3,7 +3,6 @@
     "dependencies": [],
     "essential": true,
     "sources": [
-        { "path": "jquery.js", "excludeFromNamespace": true, "runJsLint": false },
         { "path": "jquery.animate-enhanced.js", "excludeFromNamespace": true, "runJsLint": false },
         { "path": "jquery.ba-hashchange.js", "excludeFromNamespace": true, "runJsLint": false },
         { "path": "jquery.cookie.js", "excludeFromNamespace": true, "runJsLint": false },
