@@ -978,6 +978,7 @@ var UserAgent = function() {
         "platformVersionIsAtLeast": platformVersionIsAtLeast,
         "platformVersionIsLessThan": platformVersionIsLessThan,
         "supports": supports,
+        "setCapability": setCapability,
         "isBot": isBot
     };
 }();
