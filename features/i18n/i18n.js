@@ -52,6 +52,9 @@ function i18n(module, textKey) {
             textKey = textKey[textKey.length == 2 ? 1 : 2];
         }
     }
+    if (textKey === "") {
+        return "";
+    }
 
     var text = Modules[module].translations[textKey];
     if (text === undefined && Modules[module].dependencies) {
