@@ -8,7 +8,6 @@
         { "path": "logging.js", "inline": true },
         { "path": "useragent.js" },
         { "path": "async.js", "inline": true },
-        { "path": "events.js" },
         { "path": "profiling.js" }
     ],
     "statics": []
