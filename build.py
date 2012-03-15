@@ -5,6 +5,7 @@ from optparse import OptionParser
 import base64
 import buildutil
 import codecs
+import distutils.dir_util
 import imp
 import os
 import shutil
@@ -276,7 +277,7 @@ class ProjectBuilder(object):
 
     def build(self):
         if not os.path.exists(self.buildDir):
-            os.mkdir(self.buildDir)
+            distutils.dir_util.mkpath(self.buildDir)
 
         self.loadFeatures()
 
