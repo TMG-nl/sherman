@@ -44,12 +44,12 @@
 function i18n(module, textKey) {
 
     if (textKey instanceof Array) {
-        if (arguments[2] == 0) {
-            textKey = textKey[textKey.length == 2 ? 1 : 0];
-        } else if (arguments[2] == 1) {
-            textKey = textKey[textKey.length == 2 ? 0 : 1];
+        if (arguments[2] === 0) {
+            textKey = textKey[textKey.length === 2 ? 1 : 0];
+        } else if (arguments[2] === 1) {
+            textKey = textKey[textKey.length === 2 ? 0 : 1];
         } else {
-            textKey = textKey[textKey.length == 2 ? 1 : 2];
+            textKey = textKey[textKey.length === 2 ? 1 : 2];
         }
     }
     if (textKey === "") {
