@@ -16,8 +16,7 @@ class BuildError(Exception):
         print message
         if self.originalTrace:
             print "Traceback (most recent call last):"
-            for frame in self.originalTrace:
-                print "  File \"%s\", line %s, in %s" % (frame[1], frame[2], frame[3])
+            self.printTrace(self)
 
     def extendMessage(self, message, exception):
         if exception:
@@ -25,3 +24,11 @@ class BuildError(Exception):
             if "originalException" in exception.__dict__ and exception.originalException:
                 message = self.extendMessage(message, exception.originalException)
         return message
+
+    def printTrace(self, exception):
+        if "originalTrace" in exception.__dict__ and exception.originalTrace:
+            for frame in exception.originalTrace:
+                print "  File \"%s\", line %s, in %s" % (frame[1], frame[2], frame[3])
+
+            if "originalException" in exception.__dict__ and exception.originalException:
+                self.printTrace(exception.originalException)
