@@ -18,20 +18,11 @@ var Routes = function() {
      */
     function tileToPath(tile) {
 
-        var hashQuery = {};
-
-        if (window.location.hash.indexOf("?") !== -1) {
-            // Do not throw away any parameters passed as arguments to the hash
-            var search = window.location.hash.substr(window.location.hash.indexOf("?") + 1);
-            hashQuery = $.deparam(search);
-        }
-
-        hashQuery.s = randomHash();
-
         if (tile.toPath) {
-            return tile.toPath() + "?" + $.param(hashQuery);
+            return tile.toPath() + "?s=" + randomHash();
+        } else {
+            return null;
         }
-        return null;
     }
 
     /**
