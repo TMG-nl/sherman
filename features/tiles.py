@@ -15,8 +15,6 @@ class Feature(ShermanFeature):
     def __init__(self, options):
         ShermanFeature.__init__(self, options)
 
-        self.projectBuilder.features["modules-helper"] = HelperFeature(options)
-
         self.additionalBootResources.append({
             "path": "/features/tiles/routes.js"
         })
