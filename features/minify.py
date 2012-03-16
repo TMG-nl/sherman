@@ -30,4 +30,4 @@ class Feature(ShermanFeature):
         if p.returncode != 0:
             raise BuildError("Minification of module %s failed" % moduleName)
 
-        module["__concat__"] = js.replace("\\n", "")
+        module["__concat__"] = js
