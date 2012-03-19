@@ -60,7 +60,7 @@ function i18n(module, textKey) {
     if (text === undefined && Modules[module].dependencies) {
         for (var i = 0; i < Modules[module].dependencies.length; i++) {
             var prerequisite = Modules[Modules[module].dependencies[i]];
-            if (prerequisite && prerequisite.translations.hasOwnProperty(textKey)) {
+            if (prerequisite && prerequisite.translations && prerequisite.translations.hasOwnProperty(textKey)) {
                 text = prerequisite.translations[textKey];
                 break;
             }
