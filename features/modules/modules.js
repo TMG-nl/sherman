@@ -337,6 +337,9 @@ var Modules = function() {
             }
         }
 
+        // export the module's dependencies
+        Modules[name].dependencies = moduleConfig[name].dependencies;
+
         stopRetryTimer();
 
         dismissPromise(name, true);
