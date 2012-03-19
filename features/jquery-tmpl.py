@@ -81,4 +81,11 @@ class Feature(ShermanFeature):
         module = self.currentBuild.files[locale][moduleName]
 
         if "__templates__" in module:
-            module["__concat__"] += module["__templates__"]
+            templates = module["__templates__"]
+
+            if "profiling" in self.projectBuilder.features:
+                templates = ("var profilingToken = Profiling.start(\"defineTemplates:" + moduleName + "\");" +
+                             templates +
+                             "Profiling.stop(\"defineTemplates:" + moduleName + "\", profilingToken);")
+
+            module["__concat__"] += templates

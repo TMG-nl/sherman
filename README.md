@@ -231,6 +231,29 @@ By enabling this feature, the files routes.js, history.js, tiles.js and
 progressivetileloader.widget.js will automatically be bundled with the boot
 module.
 
+### profiling and remove-profiling
+
+The profiling feature adds support for profiling through the Profiling class.
+Profiling is performed using the Profiling.start() and Profiling.stop() methods.
+In order to profile the boot sequence of your project, just add the following
+two lines in your code whenever your boot application is completely ready to
+use:
+
+```js
+Profiling.stop("boot", bootProfilingToken);
+Profiling.submit("boot");
+```
+
+The profiling feature will automatically inject the corresponding
+Profile.start() at the very soonest of the JavaScript execution path.
+
+Every time Profiling.submit() is called, it sends a profiling dump back to the
+development webserver, which will print the profiling information on the
+console.
+
+You can leave any profiling statements in your code, provided you use the
+remove-profiling feature when creating a distribution build.
+
 ### minify
 
 This feature minifies all concatenated JavaScript using the Google Closure

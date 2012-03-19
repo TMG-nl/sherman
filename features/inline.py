@@ -39,6 +39,7 @@ class Feature(ShermanFeature):
 
         self.projectBuilder.concatenateSources(locale, "inline", modulePath)
 
+    @ShermanFeature.priority(60)
     def generateBootstrapCode(self, locale, bootstrapCode):
         bootstrapCode["head"] = (
             "%(inlineJs)s"

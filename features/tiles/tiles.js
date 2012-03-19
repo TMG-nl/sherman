@@ -864,12 +864,7 @@ var Tiles = function() {
 
     function activateTile(container, item, activationParams) {
 
-        if (logging.isDebug()) {
-            logActivateTile(container, item, activationParams);
-        }
-
         item.container = container;
-        var profilingToken = Profiling.start(item.name);
         logging.debug("activateTile", item, activationParams);
 
         var transitionParams = { "direction": activationParams.direction, "modal": item.modal, "modalLevel": item.modalLevel, "backButtonText": item.backButtonText };
@@ -889,7 +884,6 @@ var Tiles = function() {
             if (window.GapUtility && GapUtility.forceRepaint) {
                 GapUtility.forceRepaint();
             }
-            Profiling.stop(item.name, profilingToken);
         }
 
         if (NS.hasOwnProperty(item.name) && NS[item.name].synchronous !== false) {
@@ -985,12 +979,8 @@ var Tiles = function() {
         DIRECT: directInvalidationStrategy
     };
 
-    function logActivateTile(container, item, activationParams) {
-
-        $("#tile-debug").append("<p>Activate " + item.name + " in " + container.name + "</p>");
-    }
-
     function getLastActivatedTileName() {
+
         return lastActivatedTileName;
     }
 

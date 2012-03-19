@@ -79,41 +79,7 @@ var logging = {
 };
 
 if (window.location.href.indexOf("debug=1") !== -1) {
-
-    if (window.location.host.indexOf("hyves.nl") === -1) {
-
-        (function injectWeinre() {
-
-            /*
-             * To run weinre:
-             *
-             * start the server from the CLI:
-             * ./start_weinre.sh
-             *
-             * go to http://<yourhostname>.hyveshq:9191/client/#hybrid
-             *
-             * You can only use weinre if the Hybrid is ran from the same hostname (e.g.)
-             * http://<yourhostname>.hyveshq:9090/
-             *
-             * More info on weinre: http://phonegap.github.com/weinre/
-             */
-            logging.debug('Setting up weinre for ' + window.location.hostname + ', target id: hybrid');
-
-            var element = document.createElement("script");
-            element.type = "text/javascript";
-            element.src = "http://" + window.location.hostname + ":9191/target/target-script-min.js#hybrid";
-            document.head.appendChild(element);
-        })();
-    }
-
     logging.isDebug = function() { return true; };
-
-    debugCall = function(methodName, params, apiVersion) {
-        if (apiVersion) {
-            params.ha_version = apiVersion;
-        }
-        Api.call(methodName, params).then(function(result) { logging.debug(result); });
-    };
 } else {
     logging.isDebug = function() { return false; };
 }

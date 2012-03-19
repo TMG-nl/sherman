@@ -8,6 +8,7 @@ import codecs
 import distutils.dir_util
 import imp
 import os
+import random
 import shutil
 import signal
 import shermanfeature
@@ -41,6 +42,8 @@ def parseOptions():
     parser.add_option("", "--port", dest = "port",
                       default = 9090, type = "int",
                       help = "The port on which to run the built-in webserver")
+    parser.add_option("", "--simulate-high-latency", dest = "simulateHighLatency", action = "store_true",
+                      help = "Simulates the effect of high network latency when serving")
     parser.add_option("", "--continuous-build", dest = "continuousBuild", action = "store_true",
                       help = "Keeps building the project continuously (warning: consumes a lot of CPU)")
     parser.add_option("", "--build-dir", dest = "buildDir",
@@ -53,6 +56,7 @@ def parseOptions():
         target = None
         serve = False
         port = 9090
+        simulateHighLatency = False
         continuousBuild = False
         buildDir = ""
 
@@ -64,6 +68,9 @@ def parseOptions():
         config.serve = True
 
     config.port = options.port
+
+    if options.simulateHighLatency:
+        config.simulateHighLatency = True
 
     if options.continuousBuild:
         config.continuousBuild = True
@@ -235,11 +242,14 @@ class ProjectBuilder(object):
         # set working directory as the CGIHTTPServer will only serve from current dir
         os.chdir(self.buildDir)
 
+        random.seed()
+
         import BaseHTTPServer
         import CGIHTTPServer
 
         builder = self
         class ProjectServerRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
+
             def do_GET(self):
                 try:
                     search = ""
@@ -253,6 +263,8 @@ class ProjectBuilder(object):
                         builder.loadProjectManifest()
                         shutil.copy(builder.config.projectManifest, builder.buildDir)
                         builder.build()
+                    if builder.config.simulateHighLatency:
+                        time.sleep(0.2 + 2 * random.random())
                     CGIHTTPServer.CGIHTTPRequestHandler.do_GET(self)
                 except BuildError, error:
                     error.printMessage()
@@ -264,6 +276,13 @@ class ProjectBuilder(object):
                     self.wfile.write("<p>(check console output for more info)</p>")
                     self.wfile.write("</body>")
                     self.wfile.write("</html>")
+
+            def do_POST(self):
+                if self.path == "/profile-dump":
+                    length = int(self.headers.getheader("content-length"))
+                    builder.features["profiling"].showProfileDump(self.rfile.read(length))
+                else:
+                    CGIHTTPServer.CGIHTTPRequestHandler.do_POST(self)
 
         print "Serving at http://localhost:%i/" % self.config.port
         httpd = BaseHTTPServer.HTTPServer(("0.0.0.0", self.config.port), ProjectServerRequestHandler)
@@ -442,7 +461,7 @@ class ProjectBuilder(object):
         headJs = (
             "try{document.domain='%(domain)s'}catch(e){}"
             "function giveUp(e){var a=confirm('Het spijt me te moeten zeggen dat %(title)s niet kon opstarten. Zullen we het opnieuw proberen?');"
-            r"if(a){window.location.reload()}else{document.body.innerHTML='<h1>'+e+'</h1><p><button onclick=\"window.location.reload()\">Verfrissen</button></p>'}}"
+            r"if(a){window.location.reload()}else{document.body?document.body.innerHTML='<h1>'+e+'</h1><p><button onclick=\"window.location.reload()\">Verfrissen</button></p>':alert(e)}}"
             "try{"
             "%(head)s"
             "function go(){"
@@ -458,7 +477,9 @@ class ProjectBuilder(object):
             "tail": bootstrapCode["tail"]
         }
 
-        onloadJs = "try{go()}catch(e){giveUp(e)}"
+        onloadJs = ("document.body.innerHTML=localStorage['skeleton.snapshot'];"
+                    "var el=document.createElement('style');el.type='text/css';el.innerText=localStorage['skeleton.snapshot.css'];document.head.appendChild(el);"
+                    "try{go()}catch(e){giveUp(e)}")
 
         # icing on the cake, include your favorite icon in the HTML
         favicon = buildutil.base64EncodeImage(self.projectDir + "/boot/favicon.ico")

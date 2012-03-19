@@ -320,10 +320,11 @@ var UserAgent = function() {
     }
 
     /**
-     * Checks whether or not the app is running in the iOS springboard as a web app
+     * Checks whether or not the app is running in the iOS springboard as a web
+     * app.
      *
      * @link http://developer.apple.com/library/IOs/#documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
-     * @return boolean
+     * @return true if the user-agent is a springboard web app, false otherwise.
      */
     function isIOSSpringBoardApp() {
 
@@ -741,6 +742,8 @@ var UserAgent = function() {
 
     function init() {
 
+        var profilingToken = Profiling.start("UserAgent.init");
+
         var _properties = {
             "capabilities": { }
         };
@@ -795,6 +798,8 @@ var UserAgent = function() {
         }
 
         initCustomCapabilities();
+
+        Profiling.stop("UserAgent.init", profilingToken);
     }
 
     function initCustomCapabilities() {
