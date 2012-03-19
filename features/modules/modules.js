@@ -130,11 +130,13 @@ var Modules = function() {
                 var moduleKey = "mk." + name;
                 var moduleContentKey = window.localStorage.getItem(moduleKey);
                 if (moduleContentKey) {
+                    var token = Profiling.start("loadModuleFromLocalStorage:" + name);
                     var moduleContent = window.localStorage.getItem(moduleContentKey);
                     if (moduleContent) {
                         // module in cache, so make available & load immediately
                         availableModules[name] = moduleContent;
                         evaluateModule(name);
+                        Profiling.stop("loadModuleFromLocalStorage:" + name, token);
                         continue;
                     }
                 }
@@ -294,10 +296,14 @@ var Modules = function() {
             }
         }
         if (prerequisitesReady) {
+            var token = Profiling.start("evaluateModule:" + name);
+
             evil(availableModules[name]);
             delete availableModules[name];
 
             enableModule(name);
+
+            Profiling.stop("evaluateModule:" + name, token);
         }
     }
 
@@ -310,6 +316,8 @@ var Modules = function() {
      * @param name Name of the module to enable
      */
     function enableModule(name) {
+
+        var token = Profiling.start("enableModule:" + name);
 
         // enable the CSS included in the module
         var css = Modules[name].css;
@@ -332,6 +340,8 @@ var Modules = function() {
         stopRetryTimer();
 
         dismissPromise(name, true);
+
+        Profiling.stop("enableModule:" + name, token);
     }
 
     function dismissPromise(name, fulfill) {
@@ -340,6 +350,8 @@ var Modules = function() {
             var modulesToLoad = pendingPromises[i][0];
             var moduleIndex = modulesToLoad.indexOf(name);
             if (moduleIndex > -1) {
+                var token = Profiling.start("dismissPromise:" + name);
+
                 var promise = pendingPromises[i][1];
                 if (fulfill) {
                     modulesToLoad.splice(moduleIndex, 1);
@@ -354,6 +366,8 @@ var Modules = function() {
                     pendingPromises.splice(i, 1);
                     i--;
                 }
+
+                Profiling.stop("dismissPromise:" + name, token);
             }
         }
     }
