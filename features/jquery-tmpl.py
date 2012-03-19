@@ -43,7 +43,7 @@ class Feature(ShermanFeature):
 
         module["__templates__"] = u""
 
-        wsReplacer = re.compile(r"([>}])[ \t\n\r\f\v]+([<{])", flags = re.MULTILINE)
+        wsReplacer = re.compile(r"[ \t\n\r\f\v]+", flags = re.MULTILINE)
         spaceReplacer = re.compile(r"> <", flags = re.MULTILINE)
 
         templates = buildutil.dirEntries(modulePath + "/tmpl")
@@ -65,7 +65,7 @@ class Feature(ShermanFeature):
                 elif line.startswith("<!-- /template"):
                     template = template.replace(" href=\"#\"", " href=\"javascript:void(0)\"")
 
-                    template = wsReplacer.sub(r"\1 \2", template).strip()
+                    template = wsReplacer.sub(r" ", template).strip()
                     template = spaceReplacer.sub(r"><", template)
 
                     module["__templates__"] += u"$.template(\"%s.%s\", '%s');\n" % (moduleName, templateId, buildutil.jsStringEscape(template))

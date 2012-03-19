@@ -1008,6 +1008,11 @@ var Tiles = function() {
         "getLastActivatedTileName": getLastActivatedTileName,
         "loadModuleForTile": loadModuleForTile,
 
+        // these are used for additional minifying
+        "m": pushModalTile,
+        "s": showTile,
+        "c": showTileInContainer,
+
         InvalidationStrategies: InvalidationStrategies
     };
 }();
