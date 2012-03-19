@@ -55,6 +55,7 @@
                 { "name": "zepto" },
                 { "name": "hogan" },
                 { "name": "remove-profiling" },
+                { "name": "remove-dev-cruft" },
                 { "name": "tiles" },
                 { "name": "css" },
                 { "name": "sass" },

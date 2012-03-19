@@ -253,6 +253,11 @@ console.
 You can leave any profiling statements in your code, provided you use the
 remove-profiling feature when creating a distribution build.
 
+### remove-dev-cruft
+
+Automatically removes console.log() and logging.debug() calls from your code
+before distributing your code.
+
 ### minify
 
 This feature minifies all concatenated JavaScript using the Google Closure
