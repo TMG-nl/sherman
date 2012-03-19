@@ -227,9 +227,8 @@ performing runtime translations.
 
 This features adds support for the Tiles class.
 
-By enabling this feature, the files routes.js, history.js, tiles.js and
-progressivetileloader.widget.js will automatically be bundled with the boot
-module.
+By enabling this feature, the files routes.js, history.js, tiles.js and will
+automatically be bundled with the boot module.
 
 ### profiling and remove-profiling
 

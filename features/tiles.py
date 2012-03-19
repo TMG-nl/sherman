@@ -24,9 +24,6 @@ class Feature(ShermanFeature):
         self.additionalBootResources.append({
             "path": "/features/tiles/tiles.js"
         })
-        self.additionalBootResources.append({
-            "path": "/features/tiles/progressivetileloader.widget.js"
-        })
 
     def sourcesLoaded(self, locale, moduleName, modulePath):
         module = self.currentBuild.files[locale][moduleName]
