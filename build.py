@@ -477,9 +477,7 @@ class ProjectBuilder(object):
             "tail": bootstrapCode["tail"]
         }
 
-        onloadJs = ("document.body.innerHTML=localStorage['skeleton.snapshot'];"
-                    "var el=document.createElement('style');el.type='text/css';el.innerText=localStorage['skeleton.snapshot.css'];document.head.appendChild(el);"
-                    "try{go()}catch(e){giveUp(e)}")
+        onloadJs = ("try{go()}catch(e){giveUp(e)}")
 
         # icing on the cake, include your favorite icon in the HTML
         favicon = buildutil.base64EncodeImage(self.projectDir + "/boot/favicon.ico")
