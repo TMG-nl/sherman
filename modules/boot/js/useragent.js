@@ -688,7 +688,7 @@ var UserAgent = function() {
         "docomo": { "type": "mobile" },
         "portalmmm": { "type": "mobile" },
         "opwv-sdk": { "type": "mobile" },
-        "ipad": { "type": "desktop", "device": "iPad", "platformVersionKey": "ipad; cpu os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true } } }, // the iPod Touch has a webbrowser
+        "ipad": { "type": "desktop", "device": "iPad", "platformVersionKey": "ipad; cpu os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true, "cssShadows": true } } }, // the iPod Touch has a webbrowser
         "iphone": { "type": "mobile", "device": "iPhone", "platformVersionKey": "iphone os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "groupchat": true, "cssShadows": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true, "cssShadows": true } } },
         "ipod": { "type": "mobile", "device": "iPod", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "groupchat": true, "cssShadows": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssShadows": true } } }, // the iPod Touch has a webbrowser
         "playstation portable": { "type": "mobile", "device": "PSP" },
@@ -809,7 +809,7 @@ var UserAgent = function() {
         properties.capabilities.scrollability = (isIPad() && !supports("scrollover"));
         properties.capabilities.pushnotifications = (navigator.push || isAndroidContainer() || window.device);
         properties.capabilities.chat = (isIPhoneContainer() || isIPadContainer() || getQueryParam("chat") === "1");
-        properties.capabilities["chat-push"] = (isIPhoneContainer() || isIPadContainer()); 
+        properties.capabilities["chat-push"] = (isIPhoneContainer() || isIPadContainer());
     }
 
     function processProperties(properties, userAgentString) {
