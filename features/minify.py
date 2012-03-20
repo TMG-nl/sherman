@@ -39,19 +39,19 @@ class Feature(ShermanFeature):
 
     def preMinifyTricks(self, js):
 
-        js = re.compile(r"(([a-zA-Z0-9_]+\.)?)Application *=", flags = re.MULTILINE).sub(r"\1A = \1Application =", js)
+        js = re.compile(r"((\w+\.)?)(?<!\w)Application *=", flags = re.MULTILINE).sub(r"\1A = \1Application =", js)
         js = re.compile(r"Application\.", flags = re.MULTILINE).sub("A.", js)
 
-        js = re.compile(r"(([a-zA-Z0-9_]+\.)?)Modules *=", flags = re.MULTILINE).sub(r"\1M = \1Modules =", js)
+        js = re.compile(r"((\w+\.)?)(?<!\w)Modules *=", flags = re.MULTILINE).sub(r"\1M = \1Modules =", js)
         js = re.compile(r"Modules\.", flags = re.MULTILINE).sub("M.", js)
 
-        js = re.compile(r"(([a-zA-Z0-9_]+\.)?)Tiles *=", flags = re.MULTILINE).sub(r"\1T = \1Tiles =", js)
+        js = re.compile(r"((\w+\.)?)(?<!\w)Tiles *=", flags = re.MULTILINE).sub(r"\1T = \1Tiles =", js)
         js = re.compile(r"Tiles\.showTileInContainer", flags = re.MULTILINE).sub("T.c", js)
         js = re.compile(r"Tiles\.showTile", flags = re.MULTILINE).sub("T.s", js)
         js = re.compile(r"Tiles\.pushModalTile", flags = re.MULTILINE).sub("T.m", js)
         js = re.compile(r"Tiles\.", flags = re.MULTILINE).sub("T.", js)
 
-        js = re.compile(r"(([a-zA-Z0-9_]+\.)?)UserAgent *=", flags = re.MULTILINE).sub(r"\1U = \1UserAgent =", js)
+        js = re.compile(r"((\w+\.)?)(?<!\w)UserAgent *=", flags = re.MULTILINE).sub(r"\1U = \1UserAgent =", js)
         js = re.compile(r"UserAgent\.", flags = re.MULTILINE).sub("U.", js)
 
         return js
