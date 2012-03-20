@@ -23,35 +23,38 @@ class Feature(ShermanFeature):
         tempPath = self.projectBuilder.buildDir + "/" + moduleName + ".js"
         with codecs.open(tempPath, "w", "utf-8") as f:
             f.write(js)
-        p = subprocess.Popen("java -jar %s/other/closure-compiler/compiler.jar --js %s --jscomp_off nonStandardJsDocs 2>/dev/null" %
-                             (self.shermanDir, tempPath), shell = True, stdout = subprocess.PIPE)
+        p = subprocess.Popen("java -jar %s/other/closure-compiler/compiler.jar --js %s --jscomp_off nonStandardJsDocs" %
+                             (self.shermanDir, tempPath), shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
         js = ""
+        err = ""
         while p.poll() == None:
             (stdoutdata, stderrdata) = p.communicate()
             js += stdoutdata
+            err += stderrdata
 
-        os.remove(tempPath)
-        if p.returncode != 0:
-            raise BuildError("Minification of module %s failed" % moduleName)
+        if p.returncode == 0:
+            os.remove(tempPath)
+        else:
+            raise BuildError("Minification of module %s failed: %s" % (moduleName, err))
 
         module["__concat__"] = js
 
     def preMinifyTricks(self, js):
 
         js = re.compile(r"((\w+\.)?)(?<!\w)Application *=", flags = re.MULTILINE).sub(r"\1A = \1Application =", js)
-        js = re.compile(r"Application\.", flags = re.MULTILINE).sub("A.", js)
+        js = re.compile(r"(?<!\w)Application\.", flags = re.MULTILINE).sub("A.", js)
 
         js = re.compile(r"((\w+\.)?)(?<!\w)Modules *=", flags = re.MULTILINE).sub(r"\1M = \1Modules =", js)
-        js = re.compile(r"Modules\.", flags = re.MULTILINE).sub("M.", js)
+        js = re.compile(r"(?<!\w)Modules\.", flags = re.MULTILINE).sub("M.", js)
 
         js = re.compile(r"((\w+\.)?)(?<!\w)Tiles *=", flags = re.MULTILINE).sub(r"\1T = \1Tiles =", js)
-        js = re.compile(r"Tiles\.showTileInContainer", flags = re.MULTILINE).sub("T.c", js)
-        js = re.compile(r"Tiles\.showTile", flags = re.MULTILINE).sub("T.s", js)
-        js = re.compile(r"Tiles\.pushModalTile", flags = re.MULTILINE).sub("T.m", js)
-        js = re.compile(r"Tiles\.", flags = re.MULTILINE).sub("T.", js)
+        js = re.compile(r"(?<!\w)Tiles\.showTileInContainer", flags = re.MULTILINE).sub("T.c", js)
+        js = re.compile(r"(?<!\w)Tiles\.showTile", flags = re.MULTILINE).sub("T.s", js)
+        js = re.compile(r"(?<!\w)Tiles\.pushModalTile", flags = re.MULTILINE).sub("T.m", js)
+        js = re.compile(r"(?<!\w)Tiles\.", flags = re.MULTILINE).sub("T.", js)
 
         js = re.compile(r"((\w+\.)?)(?<!\w)UserAgent *=", flags = re.MULTILINE).sub(r"\1U = \1UserAgent =", js)
-        js = re.compile(r"UserAgent\.", flags = re.MULTILINE).sub("U.", js)
+        js = re.compile(r"(?<!\w)UserAgent\.", flags = re.MULTILINE).sub("U.", js)
 
         return js
