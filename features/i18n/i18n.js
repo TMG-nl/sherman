@@ -57,7 +57,7 @@ function i18n(module, textKey) {
     }
 
     var text = Modules[module].translations[textKey];
-    if (text === undefined && Modules[module].dependencies) {
+    if (!text && Modules[module].dependencies) {
         for (var i = 0; i < Modules[module].dependencies.length; i++) {
             var prerequisite = Modules[Modules[module].dependencies[i]];
             if (prerequisite && prerequisite.translations && prerequisite.translations.hasOwnProperty(textKey)) {
@@ -66,6 +66,11 @@ function i18n(module, textKey) {
             }
         }
     }
+
+    if (!text) {
+        throw Exception("Could not lookup text key " + textKey + " in module " + module);
+    }
+
     for (var j = 2; j < arguments.length; j++) {
         var parts = text.split("%" + (j - 1));
         text = parts.join(arguments[j]);
