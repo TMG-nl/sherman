@@ -118,6 +118,16 @@ This feature allows images to be base64-encoded into the CSS.
 The images should be located in a module's img/base64/ directory and be
 referenced from the CSS as "url(base64/{fileName})".
 
+### jquery
+
+This feature includes jQuery into the boot module.
+
+NOTE: the bundled jquery.js has been heavily stripped (no support for IE6 and 7,
+no support for ondomready scripts, no support for adding script tags during DOM
+manipulations, etc.). If you want to use a stock jQuery implementation, you can
+create the directory /features/jquery in your own project, and put a fresh
+jquery.js in there. 
+
 ### jquery-tmpl
 
 This feature includes jQuery templates into a module.
@@ -137,6 +147,10 @@ The final name of the template, as used in the $.tmpl() function will be
 
 By enabling this feature, the file jquery.tmpl.js will automatically be bundled
 with the boot module.
+
+### zepto
+
+This feature includes Zepto.js into the boot module.
 
 ### hogan
 
@@ -262,14 +276,6 @@ before distributing your code.
 
 This feature minifies all concatenated JavaScript using the Google Closure
 compiler (https://developers.google.com/closure/compiler/).
-
-### jquery
-
-This feature includes jQuery into the boot module.
-
-### zepto
-
-This feature includes Zepto.js into the boot module.
 
 ### jslint
 
