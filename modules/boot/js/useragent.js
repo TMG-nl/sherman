@@ -236,7 +236,7 @@ var UserAgent = function() {
      */
     function isMaemo() {
 
-        return isPlatform("Linux") && properties.type === "mobile";
+        return isPlatform("Linux") && isMobileDevice();
     }
 
     /**
@@ -258,7 +258,7 @@ var UserAgent = function() {
      */
     function isAndroidTablet() {
 
-        return isAndroid() && !isMobileDevice() ;
+        return isAndroid() && !isMobileDevice();
     }
 
     /**
@@ -320,18 +320,6 @@ var UserAgent = function() {
     }
 
     /**
-     * Checks whether or not the app is running in the iOS springboard as a web
-     * app.
-     *
-     * @link http://developer.apple.com/library/IOs/#documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
-     * @return true if the user-agent is a springboard web app, false otherwise.
-     */
-    function isIOSSpringBoardApp() {
-
-        return !!navigator.standalone;
-    }
-
-    /**
      * Checks whether the reported user-agent is a desktop browser.
      *
      * @return true if the user-agent is a desktop browser, false otherwise.
@@ -382,7 +370,7 @@ var UserAgent = function() {
      */
     function isIOS() {
 
-        return (isMobileDevice() && isMac()) || isIPad();
+        return isPlatform("iOS");
     }
 
     /**
@@ -688,9 +676,9 @@ var UserAgent = function() {
         "docomo": { "type": "mobile" },
         "portalmmm": { "type": "mobile" },
         "opwv-sdk": { "type": "mobile" },
-        "ipad": { "type": "desktop", "device": "iPad", "platformVersionKey": "ipad; cpu os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true, "cssShadows": true } } }, // the iPod Touch has a webbrowser
-        "iphone": { "type": "mobile", "device": "iPhone", "platformVersionKey": "iphone os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "groupchat": true, "cssShadows": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true, "cssShadows": true } } },
-        "ipod": { "type": "mobile", "device": "iPod", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "groupchat": true, "cssShadows": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssShadows": true } } }, // the iPod Touch has a webbrowser
+        "ipad": { "type": "desktop", "platform": "iOS", "device": "iPad", "platformVersionKey": "ipad; cpu os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true, "cssShadows": true } } },
+        "iphone": { "type": "mobile", "platform": "iOS", "device": "iPhone", "platformVersionKey": "iphone os ", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "groupchat": true, "cssShadows": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssPositionFixed": true, "cssShadows": true } } },
+        "ipod": { "type": "mobile", "platform": "iOS", "device": "iPod", "capabilities": { "touchScreen": true, "cssPositionFixed": false, "groupchat": true, "cssShadows": false }, "platformVersionCapabilities": { ">=5": { "scrollover": true, "cssShadows": true } } }, // the iPod Touch has a webbrowser
         "playstation portable": { "type": "mobile", "device": "PSP" },
         "opera mobi": { "type": "mobile", "browser": "Opera" },
         "opera mini": { "type": "mobile", "browser": "Opera Mini", "browserVersionKey": "opera mini/", "capabilities": { "cssPositionFixed": false } },
@@ -710,8 +698,8 @@ var UserAgent = function() {
 
         // hyves-specific stuff
         "hyves": { "capabilities": { "hyvesBrand": true } },
-        "hyvescontainer": { "container" : true },
-        "hybridcontainer": { "container" : true },
+        "hyvescontainer": { "container": true },
+        "hybridcontainer": { "container": true },
 
         // desktop browsers
         "mozilla": { "type": "desktop" },
@@ -726,7 +714,7 @@ var UserAgent = function() {
         "safari/125": { "browserVersion": "1.2" },
         "safari/312": { "browserVersion": "1.3" },
         "safari/41": { "browserVersion": "2.0" },
-        "safari": { "type": "desktop", "browser": "Safari", "browserVersionKey": "version/", "capabilities": { "cssShadows": true, "cssPositionFixed": true } },
+        "safari": { "browser": "Safari", "browserVersionKey": "version/", "capabilities": { "cssShadows": true, "cssPositionFixed": true } },
 
         // desktop platforms
         "beos": { "type": "desktop", "platform": "BeOS" },
@@ -736,8 +724,8 @@ var UserAgent = function() {
         "mac": { "type": "desktop", "platform": "Mac OS" },
         "nt ": { "type": "desktop", "platform": "Windows", "platformVersionKey": "nt " },
         "windows": { "type": "desktop", "platform": "Windows" },
-        "bsd": { "type": "desktop" , "platform": "Unix" },
-        "sun": { "type": "desktop" , "platform": "Unix" }
+        "bsd": { "type": "desktop", "platform": "Unix" },
+        "sun": { "type": "desktop", "platform": "Unix" }
     };
 
     function init() {
@@ -962,10 +950,8 @@ var UserAgent = function() {
         "isMaemo": isMaemo,
         "isAndroid": isAndroid,
         "isTablet": isTablet,
-        "isHyvesBranded": isHyvesBranded,
         "isNokiaContainer": isNokiaContainer,
         "isHybridContainer": isHybridContainer,
-        "isIOSSpringBoardApp": isIOSSpringBoardApp,
         "isAndroidContainer": isAndroidContainer,
         "isBlackBerryContainer": isBlackBerryContainer,
         "isIPadContainer": isIPadContainer,
