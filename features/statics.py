@@ -44,10 +44,8 @@ class Feature(ShermanFeature):
             with open(path, "r") as inFile:
                 content = inFile.read()
 
-            destFileName = buildutil.getDestinationFileName(moduleName, baseName, content, None, extension)
-
-            # HACK: Make sure statics use same filename for debug and normal builds
-            destFileName = destFileName.replace(".debug.", ".")
+            destFileName = buildutil.getDestinationFileName(moduleName, baseName, content, None, extension,
+                                                            pattern = "{moduleName}{.baseName}{.md5}{.extension}")
 
             destPath = self.buildDir + "/" + destFileName
             if not os.path.exists(destPath): # avoid multiple locales copying the same file

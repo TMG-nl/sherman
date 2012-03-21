@@ -71,8 +71,11 @@ def getContentHash(content):
 """ Returns the proper output file name for a file, given the module name, base
     name, file content, locale and extension. """
 fileNamePattern = "{moduleName}{.baseName}{.md5}{.locale}{.extension}"
-def getDestinationFileName(moduleName, baseName, content, locale, extension):
+def getDestinationFileName(moduleName, baseName, content, locale, extension, pattern = ""):
     global fileNamePattern
+
+    if pattern == "":
+        pattern = fileNamePattern
 
     def replacePlaceholder(pattern, placeholderName, replacement):
         for match in re.finditer(r"\{(.?)" + placeholderName + r"(.?)\}", pattern):
@@ -83,7 +86,7 @@ def getDestinationFileName(moduleName, baseName, content, locale, extension):
             pattern = pattern.replace(fullMatch, fullReplacement)
         return pattern
 
-    fileName = fileNamePattern
+    fileName = pattern
     fileName = replacePlaceholder(fileName, "moduleName", moduleName)
     fileName = replacePlaceholder(fileName, "baseName", baseName)
     fileName = replacePlaceholder(fileName, "md5", getContentHash(content) if content else "")
