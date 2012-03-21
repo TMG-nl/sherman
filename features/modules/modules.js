@@ -30,12 +30,11 @@ var Modules = function() {
     
     var inverseTileModuleDependencies = null;
 
-    var evil = window[["ev", "al"].join("")];
+    var evil = (window.execScript || function(data) {
+        window[["ev", "al"].join("")].call(window, data);
+    });
     
-    /* The locale for loading the modules.
-     * @private 
-     */
-    var locale;
+    var locale = "en_US";
 
     /**
      * Configures the module system.
@@ -52,7 +51,7 @@ var Modules = function() {
 
         baseUrl = _baseUrl;
         moduleConfig = _moduleConfig;
-        setLocale(_locale);
+        locale = _locale;
 
         // remove outdated cached modules
         var name;
@@ -490,16 +489,6 @@ var Modules = function() {
             }
         }
     }
-    
-    /* Set the locale
-     * @private 
-     */
-    function setLocale(_locale) {
-        
-        locale = _locale;
-    }
-    
-    setLocale("en_US");
 
     return {
         "config": config,
