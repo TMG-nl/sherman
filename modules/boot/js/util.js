@@ -99,7 +99,7 @@ if (!Number.randomId) {
 /**
  * Returns a string with its first character capitalized
  */
-if (!String.capitalize) {
+if (!String.prototype.capitalize) {
     String.prototype.capitalize = function() {
         return this.charAt(0).toUpperCase() + this.slice(1);
     }
