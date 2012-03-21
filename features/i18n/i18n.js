@@ -68,7 +68,7 @@ function i18n(module, textKey) {
     }
 
     if (!text) {
-        throw Exception("Could not lookup text key " + textKey + " in module " + module);
+        throw Error("Could not lookup text key " + textKey + " in module " + module);
     }
 
     for (var j = 2; j < arguments.length; j++) {
