@@ -30,7 +30,7 @@ var Modules = function() {
     
     var inverseTileModuleDependencies = null;
 
-    var evil = (window.execScript || function(data) {
+    var evil = (window[["exec", "Script"].join("")] || function(data) {
         window[["ev", "al"].join("")].call(window, data);
     });
     
