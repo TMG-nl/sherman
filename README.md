@@ -120,13 +120,10 @@ referenced from the CSS as "url(base64/{fileName})".
 
 ### jquery
 
-This feature includes jQuery into the boot module.
+This feature includes jQuery (version 1.7.2) into the boot module.
 
-NOTE: the bundled jquery.js has been heavily stripped (no support for IE6 and 7,
-no support for ondomready scripts, no support for adding script tags during DOM
-manipulations, etc.). If you want to use a stock jQuery implementation, you can
-create the directory /features/jquery in your own project, and put a fresh
-jquery.js in there. 
+If you want to override the version of jQuery that is bundled with Sherman,
+just provide your own version in features/jquery/jquery.js in your project.
 
 ### jquery-tmpl
 
@@ -150,7 +147,10 @@ with the boot module.
 
 ### zepto
 
-This feature includes Zepto.js into the boot module.
+This feature includes Zepto.js (version 0.8.0) into the boot module.
+
+If you want to override the version of Zepto.js that is bundled with Sherman,
+just provide your own version in features/zepto/zepto.js in your project.
 
 ### hogan
 
