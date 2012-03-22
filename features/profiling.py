@@ -18,6 +18,21 @@ class Feature(ShermanFeature):
             "inline": True
         })
 
+    def sourcesLoaded(self, locale, moduleName, modulePath):
+        module = self.currentBuild.files[locale][moduleName]
+
+        for source in module["__manifest__"]["sources"]:
+            if moduleName == "inline" or "inline" in source and source["inline"]:
+                continue
+
+            startStmt = "var __evalToken = Profiling.start(\"%s.eval\");\n" % source["path"]
+            stopStmt = "\nProfiling.stop(\"%s.eval\", __evalToken);" % source["path"]
+
+            path = self.projectBuilder.resolveFile(source["path"], modulePath + "/js")
+
+            if not module[path].startswith(startStmt):
+                module[path] = startStmt + module[path] + stopStmt
+
     @ShermanFeature.priority(40)
     def generateBootstrapCode(self, locale, bootstrapCode):
         bootstrapCode["head"] = (
@@ -41,15 +56,16 @@ class Feature(ShermanFeature):
                 self.children = []
 
                 self.name = ""
-                self.runningTime = 0
+                self.runningTime = -1
                 self.synchronous = True
+                self.token = 0
 
             def printNode(self, indent = ""):
                 if self.name:
-                    if self.runningTime:
+                    if self.runningTime != -1:
                         childrenTime = 0
                         for child in self.children:
-                            if child.runningTime:
+                            if child.runningTime > 0:
                                 childrenTime += child.runningTime
                         if childrenTime > 0:
                             print indent + colorize(self.name + ": " + str(self.runningTime) + "ms (own: " + str(self.runningTime - childrenTime) + "ms)", "00;32")
