@@ -11,12 +11,48 @@ class Feature(ShermanFeature):
 
     @ShermanFeature.priority(80)
     def sourcesLoaded(self, locale, moduleName, modulePath):
-        if moduleName != "boot":
-            return
 
         UA = self.options["UA"]
 
         module = self.currentBuild.files[locale][moduleName]
+
+        if "css" in UA and "__styles__" in module:
+            css = UA["css"]
+
+            styles = module["__styles__"]
+
+            if "not-classes" in css:
+                for className in css["not-classes"]:
+                    def filterCssRules(match):
+                        selector = match.group(1)
+                        if selector.find(",") == -1:
+                            print "      Stripping %s { ... }" % selector
+                            return ""
+                        selectors = selector.split(",")
+                        remainingSelectors = []
+                        for sub in selectors:
+                            found = False
+                            for cn in css["not-classes"]:
+                                if sub.find("." + cn) != -1:
+                                    found = True
+                            if not found:        
+                                remainingSelectors.append(sub)
+                        if len(remainingSelectors) == 0:
+                            print "      Stripping %s { ... }" % selector
+                            return ""
+                        selector = ",".join(remainingSelectors)
+                        print "      Replacing %s { ... } => %s { ... }" % (match.group(1), selector)
+                        return selector + match.group(2)
+    
+                    styles = re.compile(r"([^{}]*\.%s(?:\s+[^{}]*)?)(\{[^}]+\})" % className).sub(filterCssRules, styles)
+    
+                # remove now-empty media queries
+                styles = re.compile(r"[^{}]+\{\s*\}").sub("", styles)
+
+            module["__styles__"] = styles
+
+        if moduleName != "boot":
+            return
 
         userAgentJsPath = self.projectBuilder.resolveFile("useragent.js", modulePath + "/js")
         userAgentJs = module[userAgentJsPath]
@@ -74,7 +110,7 @@ class Feature(ShermanFeature):
 
         userAgentJs = self.reduceLogicalOperators(userAgentJs)
 
-        module[userAgentJsPath] = userAgentJs 
+        module[userAgentJsPath] = userAgentJs
 
     def optimize(self, methodName, value, js, internal = False):
         prefix = "" if internal else r"(?:\w+\.)?UserAgent\."

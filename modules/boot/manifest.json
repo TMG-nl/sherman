@@ -4,9 +4,9 @@
     "essential": true,
     "sources": [
         { "path": "util.js", "runJsLint": false },
-        { "path": "testing.js", "inline": true },
         { "path": "logging.js", "inline": true },
         { "path": "useragent.js" },
+        { "path": "zerotimeout.js", "inline": true },
         { "path": "async.js", "inline": true }
     ],
     "statics": []

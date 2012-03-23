@@ -28,7 +28,6 @@ function History(historyParams) {
 
     var addItemsInProgress = 0;
 
-    var baseLocation;
     var queryString;
 
     function init() {
@@ -40,23 +39,10 @@ function History(historyParams) {
         var url = location.href;
         var index = url.indexOf("/hybrid");
         if (index > 0) {
-            baseLocation = url.substr(0, index) + "/hybrid";
             queryString = location.search;
         }
 
-        if (useHtml5HistoryApi()) {
-            window.addEventListener("popstate", onhashchange, false);
-        } else {
-            $(window).bind("hashchange", onhashchange);
-        }
-    }
-
-    /**
-     * Returns true if HTML5 History is supported.
-     */
-    function useHtml5HistoryApi() {
-
-        return UserAgent.supports("html5History") && baseLocation;
+        $(window).bind("hashchange", onhashchange);
     }
 
     /**
@@ -80,33 +66,17 @@ function History(historyParams) {
         currentIndex++;
         history.splice(currentIndex, history.length - currentIndex, hash);
 
-        if (useHtml5HistoryApi()) {
-            if (hash.substr(0, 1) != "/") {
-                hash = "/" + hash;
-            }
-            window.history.pushState(null, null, baseLocation + hash + queryString);
+        if (location.hash.substr(1) != hash) {
             addItemsInProgress++;
-            onhashchange();
-        } else {
-            if (location.hash.substr(1) != hash) {
-                addItemsInProgress++;
-                location.hash = hash; // on some platforms, this immediately triggers
-                return;               // onhashchange, before the method is finished
-            }
+            location.hash = hash; // on some platforms, this immediately triggers
+            return;               // onhashchange, before the method is finished
         }
     }
 
     function onhashchange() {
 
         var newHash;
-        if (useHtml5HistoryApi()) {
-            newHash = location.href.substring(baseLocation.length);
-            if (!historyItems.hasOwnProperty(newHash) && newHash.substr(0, 1) === "/") {
-                newHash = newHash.substr(1);
-            }
-        } else {
-            newHash = location.hash.substr(1);
-        }
+        newHash = location.hash.substr(1);
 
         var prevHash = currentHash;
         currentHash = newHash;
@@ -251,21 +221,11 @@ function History(historyParams) {
      */
     function destruct() {
 
-        if (useHtml5HistoryApi()) {
-            window.removeEventListener("popstate", onhashchange);
-        } else {
-            $(window).unbind("hashchange", onhashchange);
-            /*
-             * Reset the window hash, so that the current page is excluded from 
-             * the history object.
-             */
-            window.location.hash = "";
-        }
-    }
+        $(window).unbind("hashchange", onhashchange);
 
-    function debug() {
-
-        logging.debug(["history / historyItems / currentIndex", history, historyItems, currentIndex]);
+        // reset the window hash, so that the current page is excluded from the 
+        // history object
+        window.location.hash = "";
     }
 
     init();
@@ -276,7 +236,6 @@ function History(historyParams) {
         "getItems": getItems,
         "back": back,
         "go": go,
-        "destruct": destruct,
-        "debug": debug
+        "destruct": destruct
     };
 }

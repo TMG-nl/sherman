@@ -35,11 +35,7 @@ var logging = {
             }
         }
 
-        if (Testing.log) {
-            Testing.log("debug: " + _msg.join(", "));
-        } else if (window.debug && debug.log) {
-            debug.log(_msg.join(", "));
-        } else if (window.console) {
+        if (window.console) {
             var c = console; // to prevent removal by build system
             c.log(_msg);
         }
@@ -47,11 +43,7 @@ var logging = {
 
     error: function(msg) {
 
-        if (Testing.log) {
-            Testing.log("ERROR: " + msg);
-        } else if (window.debug && debug.log) {
-            debug.log(msg);
-        } else if (window.console) {
+        if (window.console) {
             if (console.error) {
                 console.error(msg);
             } else {
@@ -62,13 +54,9 @@ var logging = {
 
     exception: function(msg, e) {
  
-        msg += ": " + (e === undefined ? "Unknown exception caught" : e.toString() + (e.error_code ? (" (" + e.error_code + ")") : ""));
+        msg += ": " + (e === undefined ? "Unknown exception caught" : e.toString());
 
-        if (Testing.log) {
-            Testing.log("EXCEPTION: " + msg);
-        } else if (window.debug && debug.log) {
-            debug.log(msg);
-        } else if (window.console && window.console.error) {
+        if (window.console && console.error) {
             console.error(msg); // Log the message to the console so it can be inspected.
             console.error(e); // Send the exception to the console so it can be inspected.
             if (console.trace) {
@@ -78,8 +66,4 @@ var logging = {
     }
 };
 
-if (window.location.href.indexOf("debug=1") !== -1) {
-    logging.isDebug = function() { return true; };
-} else {
-    logging.isDebug = function() { return false; };
-}
+logging.isDebug = (window.location.href.indexOf("debug=1") !== -1) ? function() { return true; } : function() { return false; };

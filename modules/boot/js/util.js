@@ -96,15 +96,6 @@ if (!Number.randomId) {
     };
 }
 
-/**
- * Returns a string with its first character capitalized
- */
-if (!String.prototype.capitalize) {
-    String.prototype.capitalize = function() {
-        return this.charAt(0).toUpperCase() + this.slice(1);
-    }
-}
-
 function randomHash() {
 
     var len = 12;
@@ -113,6 +104,15 @@ function randomHash() {
         rnd = rnd + Math.floor(Math.random() * (1 << 30)).toString(16).toUpperCase();
     }
     return rnd.substring(0, len);
+}
+
+/**
+ * Returns a string with its first character capitalized
+ */
+if (!String.prototype.capitalize) {
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
 }
 
 /**
@@ -130,7 +130,7 @@ function randomHash() {
  */
 function getQueryParam(name, defaultValue, queryString) {
 
-    if (queryString === undefined) {
+    if (!queryString) {
         queryString = window.location.search;
     }
     var match = RegExp("[?&]" + name + "=([^&]*)").exec(queryString);
@@ -138,13 +138,4 @@ function getQueryParam(name, defaultValue, queryString) {
     return match ?
         decodeURIComponent(match[1].replace(/\+/g, " "))
         : defaultValue;
-}
-
-/**
- * Decode a normal js string to a html escaped one (with &gt; etc)
- * which can be used to put into innerHTML fields.
- */
-function htmlEncode(value) {
-
-    return $("<div/>").text(value).html();
 }

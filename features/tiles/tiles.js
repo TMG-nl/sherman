@@ -764,13 +764,6 @@ var Tiles = function() {
         transitionStartListeners.push(listener);
     }
 
-    function debug() {
-
-        logging.debug(["tile cache", tileCache]);
-
-        history.debug();
-    }
-
     function getContainerForElement(element) {
 
         while (element) {
@@ -829,7 +822,9 @@ var Tiles = function() {
                 if (backTileEntry !== undefined) {
                     var backTile = backTileEntry.tile;
                     transitionParams.backTileName = backTileEntry.name;
-                    transitionParams.backCaption = backTile.title ? (htmlEncode(backTile.title())) : htmlEncode("[[BACK]]");
+                    if (backTile.title) {
+                        transitionParams.backCaption = backTile.title();
+                    }
                 }
             }
         }
@@ -1004,7 +999,6 @@ var Tiles = function() {
         "addTransitionStartListener": addTransitionStartListener,
         "refreshTile": refreshTile,
         "getTileFromCache": getTileFromCache,
-        "debug": debug,
         "getLastActivatedTileName": getLastActivatedTileName,
         "loadModuleForTile": loadModuleForTile,
 

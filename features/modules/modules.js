@@ -55,6 +55,7 @@ var Modules = function() {
 
         // remove outdated cached modules
         var name;
+        var localStorageProfilingToken = Profiling.start("localStorage.cleanup");
         if (window.localStorage) {
             for (name in moduleConfig) {
                 if (moduleConfig.hasOwnProperty(name)) {
@@ -69,6 +70,7 @@ var Modules = function() {
                 }
             }
         }
+        Profiling.stop("localStorage.cleanup", localStorageProfilingToken);
 
         for (name in pendingCacheables) {
             if (pendingCacheables.hasOwnProperty(name)) {
@@ -456,7 +458,7 @@ var Modules = function() {
 
         return locale;
     }
-    
+
     /**
      * Returns the name of the module in which the given tile name is defined
      * 
@@ -464,20 +466,20 @@ var Modules = function() {
      *                null if not defined. 
      */
     function getModuleForTile(tileName) {
-        
+
         if (inverseTileModuleDependencies === null) {
             createInverseTileModuleMap();
         }
-        
+
         if (inverseTileModuleDependencies.hasOwnProperty(tileName)) {
             return inverseTileModuleDependencies[tileName];
         } else {
             return null;
         }
     }
-    
+
     function createInverseTileModuleMap() {
-            
+
         inverseTileModuleDependencies = {};
         var tile;
         for (var module in Modules.tileModuleDependencies) {

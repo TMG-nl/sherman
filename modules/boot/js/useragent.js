@@ -548,7 +548,6 @@ var UserAgent = function() {
      *     <li><strong>scrollability</strong> (ie. the scrollability
      *                                         library)</li>
      *     <li><strong>iscroll</strong> (ie. the iscroll library)</li>
-     *     <li><strong>html5History</strong></li>
      *     <li><strong>keyup</strong> Whether the agent properly reports keyup
      *                                events.</li>
      *     <li><strong>placeholder</strong> Showing placeholders in input
@@ -730,8 +729,6 @@ var UserAgent = function() {
 
     function init() {
 
-        var profilingToken = Profiling.start("UserAgent.init");
-
         var _properties = {
             "capabilities": { }
         };
@@ -786,8 +783,6 @@ var UserAgent = function() {
         }
 
         initCustomCapabilities();
-
-        Profiling.stop("UserAgent.init", profilingToken);
     }
 
     function initCustomCapabilities() {
