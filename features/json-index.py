@@ -6,6 +6,7 @@ import buildutil
 import codecs
 import copy
 import os
+import types
 
 try:
     import json
@@ -92,19 +93,23 @@ class Feature(ShermanFeature):
 
         originalLoadSources = self.projectBuilder.loadSources
 
-        def loadSources(locale, moduleName, modulePath):
+        def loadSources(self, locale, moduleName, modulePath):
             module = self.currentBuild.files[locale][moduleName]
 
-            self.projectBuilder.rebuildNeeded = True
+            self.rebuildNeeded = True
 
             for source in module["__manifest__"]["sources"]:
-                path = self.projectBuilder.resolveFile(source["path"], modulePath + "/js")
-                if path in self.currentBuild.files[locale]["boot-inline"]:
-                    module[path] = self.currentBuild.files[locale]["boot-inline"][path]
-                else:
+                path = self.resolveFile(source["path"], modulePath + "/js")
+                if path in self.currentBuild.files[locale]["inline"]:
                     module[path] = self.currentBuild.files[locale]["inline"][path]
+                else:
+                    module[path] = self.currentBuild.files[locale]["boot-inline"][path]
 
-        self.projectBuilder.loadSources = loadSources
+            print "    Loaded JavaScript..."
+
+            self.invokeFeatures("sourcesLoaded", locale, moduleName, modulePath)
+
+        self.projectBuilder.loadSources = types.MethodType(loadSources, self.projectBuilder, self.projectBuilder.__class__)
 
         self.projectBuilder.buildModule("boot")
 
