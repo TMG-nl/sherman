@@ -43,9 +43,9 @@ class Feature(ShermanFeature):
                         selector = ",".join(remainingSelectors)
                         print "      Replacing %s { ... } => %s { ... }" % (match.group(1), selector)
                         return selector + match.group(2)
-    
-                    styles = re.compile(r"([^{}]*\.%s(?:\s+[^{}]*)?)(\{[^}]+\})" % className).sub(filterCssRules, styles)
-    
+
+                    styles = re.compile(r"([^{};]*\.%s(?:(?:\s+|\.)[^{}]*)?)(\{[^}]+\})" % className).sub(filterCssRules, styles)
+
                 # remove now-empty media queries
                 styles = re.compile(r"[^{}]+\{\s*\}").sub("", styles)
 
@@ -166,7 +166,7 @@ class Feature(ShermanFeature):
     def reduceLogicalOperators(self, js):
         start = 0
         while True:
-            match = re.search(r"(true|false|!?\w+\(\s*(?:[\"'][\w ]+[\"']\s*)?\))\s*(\|\||&&)\s*(true|false|!?\w+\(\s*(?:[\"'][\w ]+[\"']\s*)?\))", js[start:])
+            match = re.search(r"(true|false|!?[\w.]+\(\s*(?:[\"'][\w ]+[\"']\s*)?\))\s*(\|\||&&)\s*(true|false|!?[\w.]+\(\s*(?:[\"'][\w ]+[\"']\s*)?\))", js[start:])
             if match == None:
                 break
 
@@ -226,5 +226,11 @@ class Feature(ShermanFeature):
         for methodName in self.substitutions:
             value = self.substitutions[methodName]
             js = self.optimize(methodName, value, js)
+
+        js = self.reduceLogicalOperators(js)
+
+        if "jquery-tmpl" in self.projectBuilder.features:
+            js = re.compile(r"\{\{if\s+true\s*\}\}(.*?)\{\{/if\}\}").sub(r"\1", js)
+            js = re.compile(r"\{\{if\s+false\s*\}\}(.*?)\{\{/if\}\}").sub(r"", js)
 
         module["__concat__"] = js 
