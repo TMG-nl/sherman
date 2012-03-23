@@ -22,7 +22,7 @@ class Feature(ShermanFeature):
         module = self.currentBuild.files[locale][moduleName]
 
         for source in module["__manifest__"]["sources"]:
-            if moduleName == "inline" or "inline" in source and source["inline"]:
+            if True: # moduleName == "inline" or "inline" in source and source["inline"]:
                 continue
 
             startStmt = "var __evalToken = Profiling.start(\"%s.eval\");\n" % source["path"]
