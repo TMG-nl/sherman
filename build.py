@@ -258,11 +258,30 @@ class ProjectBuilder(object):
                     if qi > -1:
                         search = path[qi:]
                         path = path[0:qi]
+
                     if path == "/":
                         self.path = "/cgi-bin/index.py" + search
                         builder.loadProjectManifest()
                         shutil.copy(builder.config.projectManifest, builder.buildDir)
                         builder.build()
+
+                    if path.startswith("/") and path.endswith(".js"):
+                        moduleName = path[1:-3]
+                        if moduleName == "boot":
+                            builder.loadProjectManifest()
+                            shutil.copy(builder.config.projectManifest, builder.buildDir)
+                            builder.build()
+                        localeFiles = builder.currentBuild.files[builder.projectManifest["defaultLocale"]]
+                        if not moduleName in localeFiles:
+                            raise BuildError("No module named %s" % moduleName)
+                        module = localeFiles[moduleName]
+                        for fileName in module["__output__"]:
+                            if fileName.endswith(".js"):
+                                with open(builder.buildDir + "/" + fileName, "r") as f:
+                                    self.wfile.write(f.read())
+                                    return
+                        raise BuildError("Module %s did not generate a JavaScript output file" % moduleName)
+
                     if builder.config.simulateHighLatency:
                         time.sleep(0.2 + 2 * random.random())
                     CGIHTTPServer.CGIHTTPRequestHandler.do_GET(self)
