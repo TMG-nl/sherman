@@ -17,12 +17,10 @@ class Feature(ShermanFeature):
         module = self.currentBuild.files[locale][moduleName]
 
         if "css" in UA and "__styles__" in module:
-            css = UA["css"]
-
             styles = module["__styles__"]
 
-            if "not-classes" in css:
-                for className in css["not-classes"]:
+            if "not-classes" in UA["css"]:
+                for className in UA["css"]["not-classes"]:
                     def filterCssRules(match):
                         selector = match.group(1)
                         if selector.find(",") == -1:
@@ -32,7 +30,7 @@ class Feature(ShermanFeature):
                         remainingSelectors = []
                         for sub in selectors:
                             found = False
-                            for cn in css["not-classes"]:
+                            for cn in UA["css"]["not-classes"]:
                                 if sub.find("." + cn) != -1:
                                     found = True
                             if not found:        
@@ -46,10 +44,29 @@ class Feature(ShermanFeature):
 
                     styles = re.compile(r"([^{};]*\.%s(?:(?:\s+|\.)[^{}]*)?)(\{[^}]+\})" % className).sub(filterCssRules, styles)
 
-                # remove now-empty media queries
-                styles = re.compile(r"[^{}]+\{\s*\}").sub("", styles)
+            if "not-prefixes" in UA["css"]:
+                for prefix in UA["css"]["not-prefixes"]:
+                    styles = re.compile(r"%s[\w-]+\s*:[^;}]+" % prefix).sub("", styles)
+                    styles = re.compile(r"[\w-]+\s*:\s*%s[^;}]+" % prefix).sub("", styles)
+
+            # remove now-empty media queries
+            styles = re.compile(r"[^{}]+\{\s*\}").sub("", styles)
 
             module["__styles__"] = styles
+
+        if "templates" in UA and "__templates__" in module:
+            templates = module["__templates__"]
+
+            if "not-templates" in UA["templates"]:
+                for templateId in UA["templates"]["not-templates"]:
+                    templates = re.compile(r"$\.template\(\"%s\", '.*?'\);\n" % templateId).sub("", templates) # jQuery templates
+                    templates = re.compile(r"Modules\.\w+\.templates\[\"%s\"\] = new Hogan\.Template\(.*?\);\n" % templateId).sub("", templates)
+
+            if "not-attributes" in UA["templates"]:
+                for attribute in UA["templates"]["not-attributes"]:
+                    templates = re.compile(r"\s+%s=(?:\"[^\"]*\"|'[^']*')" % attribute).sub("", templates)
+
+            module["__templates__"] = templates
 
         if moduleName != "boot":
             return
@@ -166,7 +183,7 @@ class Feature(ShermanFeature):
     def reduceLogicalOperators(self, js):
         start = 0
         while True:
-            match = re.search(r"(true|false|!?[\w.]+\(\s*(?:[\"'][\w ]+[\"']\s*)?\))\s*(\|\||&&)\s*(true|false|!?[\w.]+\(\s*(?:[\"'][\w ]+[\"']\s*)?\))", js[start:])
+            match = match = re.search(r"(true|false|!?[\w.]+\(\s*(?:[\"'][\w ]+[\"']\s*)?\))\s*(\|\||&&)\s*(true|false|!?[\w.]+\(\s*(?:[\"'][\w ]+[\"']\s*)?\))", js[start:])
             if match == None:
                 break
 
