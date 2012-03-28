@@ -43,6 +43,8 @@ it in this documentation).
 Specific features may have additional dependencies:
 - To use the minify or jslint features, you should have Java installed.
 - To use the hogan feature, you should have Node.js installed.
+- To use the less feature, you should have Node.js and the less NPM package
+  installed.
 
 ## How do I use it?
 
@@ -102,6 +104,19 @@ included in the DOM when the module is loaded.
 
 This feature allows you to use SCSS (http://sass-lang.com/) in addition to plain
 CSS. SCSS files should be listed in a module's manifest under "styles", just as
+for regular CSS.
+
+SCSS files are compiled into CSS by the included Woodpecker compiler
+(https://github.com/arendjr/woodpecker).
+
+When a module has listed other modules as its dependencies, any SCSS variables,
+mixins or functions defined in the prerequisite modules are made available in
+the dependent module.
+
+### less
+
+This feature allows you to use LESS (http://lesscss.org/) in addition to plain
+CSS. LESS files should be listed in a module's manifest under "styles", just as
 for regular CSS.
 
 SCSS files are compiled into CSS by the included Woodpecker compiler
