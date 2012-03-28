@@ -28,14 +28,18 @@ class ShermanFeature(object):
         if moduleName != "boot":
             return
 
+        insertIndex = 0
         for resource in self.additionalBootResources:
             included = False
             for source in manifest["sources"]:
+                if source["path"] == "async.js" and insertIndex == 0:
+                    insertIndex = manifest["sources"].index(source) + 1
                 if source["path"].endswith(resource["path"]):
                     included = True
                     break
             if not included:
-                manifest["sources"].append(resource)
+                manifest["sources"].insert(insertIndex, resource)
+                insertIndex += 1
 
     def sourcesLoaded(self, locale, moduleName, modulePath):
         pass
