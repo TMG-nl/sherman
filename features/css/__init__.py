@@ -4,6 +4,7 @@ from shermanfeature import ShermanFeature
 
 import buildutil
 import codecs
+import os
 
 
 class Feature(ShermanFeature):
@@ -46,7 +47,7 @@ class Feature(ShermanFeature):
         module = self.currentBuild.files[locale][moduleName]
 
         if "__styles__" in module:
-            if not "bundled" in self.config or ("bundled" in self.config and self.config["bundled"]):
+            if not "bundled" in self.options or self.options["bundled"]:
                 styles = module["__styles__"].replace("\"", "\\\"").replace("\n", "\\n")
                 module["__concat__"] += "Modules.%s.css = \"%s\";\n" % (moduleName, styles)
             else:
