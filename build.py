@@ -335,10 +335,11 @@ class ProjectBuilder(object):
 
         self.invokeFeatures("modulesWritten")
 
-        for locale in self.locales:
-            bootHash = self.writeBootHtml(locale)
-
-            self.writeVersionFile("__version__", locale, bootHash)
+        if os.path.exists(self.projectDir + "/boot"):
+            for locale in self.locales:
+                bootHash = self.writeBootHtml(locale)
+    
+                self.writeVersionFile("__version__", locale, bootHash)
 
         self.invokeFeatures("buildFinished")
 
