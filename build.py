@@ -272,15 +272,14 @@ class ProjectBuilder(object):
                             shutil.copy(builder.config.projectManifest, builder.buildDir)
                             builder.build()
                         localeFiles = builder.currentBuild.files[builder.projectManifest["defaultLocale"]]
-                        if not moduleName in localeFiles:
-                            raise BuildError("No module named %s" % moduleName)
-                        module = localeFiles[moduleName]
-                        for fileName in module["__output__"]:
-                            if fileName.endswith(".js"):
-                                with open(builder.buildDir + "/" + fileName, "r") as f:
-                                    self.wfile.write(f.read())
-                                    return
-                        raise BuildError("Module %s did not generate a JavaScript output file" % moduleName)
+                        if moduleName in localeFiles:
+                            module = localeFiles[moduleName]
+                            for fileName in module["__output__"]:
+                                if fileName.endswith(".js"):
+                                    with open(builder.buildDir + "/" + fileName, "r") as f:
+                                        self.wfile.write(f.read())
+                                        return
+                            raise BuildError("Module %s did not generate a JavaScript output file" % moduleName)
 
                     if builder.config.simulateHighLatency:
                         time.sleep(0.2 + 2 * random.random())
