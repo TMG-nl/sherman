@@ -1,5 +1,9 @@
+from __future__ import with_statement
 from builderror import BuildError
 from shermanfeature import ShermanFeature
+
+import buildutil
+import codecs
 
 
 class Feature(ShermanFeature):
@@ -42,5 +46,15 @@ class Feature(ShermanFeature):
         module = self.currentBuild.files[locale][moduleName]
 
         if "__styles__" in module:
-            styles = module["__styles__"].replace("\"", "\\\"").replace("\n", "\\n")
-            module["__concat__"] += "Modules.%s.css = \"%s\";\n" % (moduleName, styles)
+            if not "bundled" in self.config or self.config["bundled"]:
+                styles = module["__styles__"].replace("\"", "\\\"").replace("\n", "\\n")
+                module["__concat__"] += "Modules.%s.css = \"%s\";\n" % (moduleName, styles)
+            else:
+                try:
+                    styles = module["__styles__"]
+                    fileName = buildutil.getDestinationFileName(moduleName, None, styles, locale, "css")
+                    with codecs.open(self.projectBuilder.buildDir + "/" + fileName, "w", "utf-8") as f:
+                        f.write(styles)
+                    module["__output__"].append(fileName)
+                except Exception, exception:
+                    raise BuildError("Could not write CSS output file for module %s" % moduleName, exception)

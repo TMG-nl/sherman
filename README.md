@@ -95,10 +95,13 @@ echo $bootHtml; // this the HTML that will be served to the client
 This feature loads all CSS files specified under "styles" in a module's
 manifest, concatenates them, and includes them in the concatenated JavaScript.
 
-The fully concatenated CSS is embedded into a JavaScript string and assigned to
-the Modules.{moduleName}.css property. If you are using modules.js (provided by
-the modules feature), the CSS will be read from this property and automatically
-included in the DOM when the module is loaded.
+By default, the fully concatenated CSS is embedded into a JavaScript string and
+assigned to the Modules.{moduleName}.css property. If you are using modules.js
+(provided by the modules feature), the CSS will be read from this property and
+automatically included in the DOM when the module is loaded.
+
+Alternatively, you can select bundled to be false in the feature's options, in
+which case the CSS will be written to a separate, versioned CSS file.
 
 ### sass
 
