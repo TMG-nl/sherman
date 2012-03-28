@@ -34,7 +34,7 @@ var Modules = function() {
         window[["ev", "al"].join("")].call(window, data);
     });
     
-    var locale = "en_US";
+    var locale;
 
     /**
      * Configures the module system.
@@ -51,7 +51,7 @@ var Modules = function() {
 
         baseUrl = _baseUrl;
         moduleConfig = _moduleConfig;
-        locale = _locale;
+        setLocale(_locale);
 
         // remove outdated cached modules
         var name;
@@ -491,6 +491,16 @@ var Modules = function() {
             }
         }
     }
+
+    /* Set the locale
+     * @private
+     */
+    function setLocale(_locale) {
+        
+        locale = _locale;
+    }
+    
+    setLocale("en_US");
 
     return {
         "config": config,
