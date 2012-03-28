@@ -3,9 +3,9 @@
     "dependencies": [],
     "essential": true,
     "sources": [
+        { "path": "useragent.js" },
         { "path": "util.js", "runJsLint": false },
         { "path": "logging.js", "inline": true },
-        { "path": "useragent.js" },
         { "path": "zerotimeout.js", "inline": true },
         { "path": "async.js", "inline": true }
     ],
