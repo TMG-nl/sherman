@@ -1,4 +1,6 @@
 
+if (UserAgent.isIE()) {
+
 /**
  * Creates a new array with all elements that pass the test implemented by the
  * provided function.
@@ -53,6 +55,8 @@ if (!Array.prototype.forEach) {
             }
         }
     };
+}
+
 }
 
 /**
@@ -117,7 +121,6 @@ if (!String.prototype.capitalize) {
 
 /**
  * Returns the value for a given query string key.
- * @todo It would be better to parse the query string once and cache the result.
  *
  * @param name Query string key
  * @param defaultValue If the query string is not found it returns this value.
@@ -133,8 +136,8 @@ function getQueryParam(name, defaultValue, queryString) {
     if (!queryString) {
         queryString = window.location.search;
     }
-    var match = RegExp("[?&]" + name + "=([^&]*)").exec(queryString);
 
+    var match = RegExp("[?&]" + name + "=([^&]*)").exec(queryString);
     return match ?
         decodeURIComponent(match[1].replace(/\+/g, " "))
         : defaultValue;
