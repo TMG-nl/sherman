@@ -62,7 +62,7 @@ class Feature(ShermanFeature):
                 elif line.startswith("<!-- /template"):
                     template = template.replace(" href=\"#\"", " href=\"javascript:void(0)\"")
 
-                    pipes = subprocess.Popen(self.shermanDir + "/other/hogan/precompile.js", shell = True, stdin = subprocess.PIPE, stdout = subprocess.PIPE)
+                    pipes = subprocess.Popen(self.shermanDir + "/features/hogan/precompile.js", shell = True, stdin = subprocess.PIPE, stdout = subprocess.PIPE)
                     compiledTemplate = ""
                     while pipes.poll() == None:
                         (stdoutdata, stderrdata) = pipes.communicate(input = template)
