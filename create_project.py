@@ -64,7 +64,6 @@ if __name__ == "__main__":
         os.mkdir(config.targetDirectory + "/modules")
         shutil.copytree("templates/core/css", config.targetDirectory + "/modules/core/css")
         shutil.copytree("templates/core/i18n", config.targetDirectory + "/modules/core/i18n")
-        shutil.copytree("templates/core/img", config.targetDirectory + "/modules/core/img")
         shutil.copytree("templates/core/js", config.targetDirectory + "/modules/core/js")
         shutil.copytree("templates/core/tmpl", config.targetDirectory + "/modules/core/tmpl")
         copyTemplate("templates/core/manifest.json", config.targetDirectory + "/modules/core/manifest.json", {
