@@ -811,10 +811,7 @@ var UserAgent = function() {
 
     function hasTouchEventSupport() {
 
-        if (isNokiaContainer() || isBlackBerry()) {
-            return false;
-        }
-        return "ontouchstart" in document.documentElement;
+        return (!isBlackBerry() && "ontouchstart" in document.documentElement);
     }
 
     init();
