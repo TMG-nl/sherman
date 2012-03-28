@@ -12,6 +12,7 @@ import random
 import shutil
 import signal
 import shermanfeature
+import sys
 import tempfile
 import time
 
@@ -51,15 +52,6 @@ def parseOptions():
 
     (options, args) = parser.parse_args()
 
-    class Config:
-        projectManifest = None
-        target = None
-        serve = False
-        port = 9090
-        simulateHighLatency = False
-        continuousBuild = False
-        buildDir = ""
-
     config = Config()
     config.projectManifest = os.path.abspath(args[0] if len(args) >= 1 else "project-manifest.json")
     config.target = options.target
@@ -79,6 +71,16 @@ def parseOptions():
         config.buildDir = options.buildDir
 
     return config
+
+
+class Config:
+    projectManifest = None
+    target = None
+    serve = False
+    port = 9090
+    simulateHighLatency = False
+    continuousBuild = False
+    buildDir = ""
 
 
 class ProjectBuilder(object):
@@ -190,6 +192,7 @@ class ProjectBuilder(object):
                 f = None
                 (f, path, description) = imp.find_module(featureName, paths)
 
+                sys.path.append(self.shermanDir)
                 module = imp.load_module(featureName, f, path, description)
                 self.features[featureName] = module.Feature(shermanfeature.Options(
                     projectDir = self.projectDir,
@@ -199,10 +202,10 @@ class ProjectBuilder(object):
                     featureOptions = feature["options"] if "options" in feature else {}
                 ))
 
-            except ImportError, error:
-                raise BuildError("Could not load feature %s" % featureName, error)
-            except Exception, exception:
-                raise BuildError("Exception while loading feature %s" % featureName, exception)
+            #except ImportError, error:
+            #    raise BuildError("Could not load feature %s" % featureName, error)
+            #except Exception, exception:
+            #    raise BuildError("Exception while loading feature %s" % featureName, exception)
             finally:
                 if f:
                     f.close()
