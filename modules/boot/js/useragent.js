@@ -4,8 +4,8 @@
  * <h2>User-Agent recognizition and capability detection.</h2>
  *
  * <p>The UserAgent class represents the user-agent (be it a regular or a mobile
- * browser, Hyves Desktop, or anything else) and allows to query for the name,
- * version, and capabilities of the agent.
+ * browser, or anything else) and allows to query for the name, version, and
+ * capabilities of the agent.
  *
  * <p>The name and version of the agent are determined by parsing the user-agent
  * string submitted to the server, and may not necessarily correspond to the
@@ -29,9 +29,9 @@ var UserAgent = function() {
      * Returns whether the reported user-agent matches the name given.
      *
      * <p>The name you give should be the name of a user-agent, like "MSIE",
-     * "Firefox", "Safari", "Hyves Desktop", or any other agent. If you are
-     * unsure about the name to use, there are also convenience methods for
-     * the most common agents, like isIE(), isFirefox(), etc..
+     * "Firefox", "Safari", or any other agent. If you are unsure about the name
+     * to use, there are also convenience methods for the most common agents,
+     * like isIE(), isFirefox(), etc..
      *
      * @param name Name of the agent to check for.
      * @return true if the name matches the user-agent, false otherwise.
@@ -262,39 +262,6 @@ var UserAgent = function() {
     }
 
     /**
-     * Checks whether this is the PhoneGap container for Android devices.
-     *
-     * @return true if the user-agent is the PhoneGap container for Android
-     *         devices, false otherwise.
-     */
-    function isAndroidContainer() {
-
-        return isHybridContainer() && isAndroid();
-    }
-
-    /**
-     * Checks whether the reported user-agent is branded by Hyves, i.e. the
-     * Hyves version of IE8, Hyves Desktop, etc..
-     *
-     * @return true if the user-agent is Hyves branded, false otherwise.
-     */
-    function isHyvesBranded() {
-
-        return supports("hyvesBrand");
-    }
-
-    /**
-     * Checks whether this is the PhoneGap container for Nokia phones.
-     *
-     * @return true if the user-agent is the PhoneGap container for Nokia
-     *         phones, false otherwise.
-     */
-    function isNokiaContainer() {
-
-        return (isSymbian() || isMaemo()) && isHyvesBranded();
-    }
-
-    /**
      * Checks whether this is a Nokia platform
      *
      * @return true if the useragent is a Nokia platform
@@ -302,21 +269,6 @@ var UserAgent = function() {
     function isNokia() {
 
         return isSymbian() || isMaemo();
-    }
-
-    /**
-     * Checks whether this is a PhoneGap container.
-     *
-     * @return true if the user-agent is a PhoneGap container, false otherwise.
-     */
-    function isHybridContainer() {
-
-        return Boolean(
-            (typeof window.device !== "undefined") || // window.device is set from the PhoneGap container
-            (typeof window.phonegap !== "undefined") ||
-            properties.container ||
-            isNokiaContainer()
-        );
     }
 
     /**
@@ -389,7 +341,7 @@ var UserAgent = function() {
      */
     function isDevice(device) {
 
-        return properties.device == device || getQueryParam("device") === device;
+        return properties.device == device;
     }
 
     /**
@@ -420,37 +372,6 @@ var UserAgent = function() {
     }
 
     /**
-     * Checks whether this is the PhoneGap container for the iPad.
-     *
-     * @return true if the user-agent is the PhoneGap container for iPad
-     */
-    function isIPadContainer() {
-
-        return isHybridContainer() && isIPad();
-    }
-
-    /**
-     * Checks whether this is the PhoneGap container for the iPhone.
-     *
-     * @return true if the user-agent is the PhoneGap container for iPhone
-     */
-    function isIPhoneContainer() {
-
-        return isHybridContainer() && isIPhone();
-    }
-
-    /**
-     * Checks whether this is the PhoneGap container for iOS.
-     *
-     * @return true if the user-agent is the PhoneGap container for iOS
-     */
-    function isIOSContainer() {
-
-        return isHybridContainer() && isIOS();
-    }
-
-
-    /**
      * Checks whether the reported user-agent is on a BlackBerry device.
      *
      * @return true if the user-agent belongs to a BlackBerry, false otherwise.
@@ -458,17 +379,6 @@ var UserAgent = function() {
     function isBlackBerry() {
 
         return isDevice("BlackBerry");
-    }
-
-    /**
-     * Checks whether this is the PhoneGap container for BlackBerry phones.
-     *
-     * @return true if the user-agent is the PhoneGap container for BlackBerry
-     *         phones, false otherwise.
-     */
-    function isBlackBerryContainer() {
-
-        return isHybridContainer() && isBlackBerry();
     }
 
     /**
@@ -542,12 +452,8 @@ var UserAgent = function() {
      * <ul>
      *     <li><strong>cssPositionFixed</strong></li>
      *     <li><strong>cssShadows</strong></li>
-     *     <li><strong>hyvesBrand</strong></li>
      *     <li><strong>touchEvents</strong></li>
      *     <li><strong>touchScreen</strong></li>
-     *     <li><strong>scrollability</strong> (ie. the scrollability
-     *                                         library)</li>
-     *     <li><strong>iscroll</strong> (ie. the iscroll library)</li>
      *     <li><strong>keyup</strong> Whether the agent properly reports keyup
      *                                events.</li>
      *     <li><strong>placeholder</strong> Showing placeholders in input
@@ -593,7 +499,6 @@ var UserAgent = function() {
         "capabilities": {
             "cssPositionFixed": false,
             "cssShadows": false,
-            "hyvesBrand": false,
             "touchEvents": false,
             "touchScreen": false,
             "keyup": true,
@@ -695,11 +600,6 @@ var UserAgent = function() {
         "mobile": { "type": "mobile", "capabilities": { "touchScreen": true } }, // assume all mobile devices (we support) have a touch interface
         "mobileie": { "type": "mobile", "platform": "Windows", "capabilities": { "keyup": true, "touchScreen": true, "cssPositionFixed": true } },
 
-        // hyves-specific stuff
-        "hyves": { "capabilities": { "hyvesBrand": true } },
-        "hyvescontainer": { "container": true },
-        "hybridcontainer": { "container": true },
-
         // desktop browsers
         "mozilla": { "type": "desktop" },
         "opera": { "type": "desktop", "browser": "Opera", "browserVersionKey": "opera/", "capabilities": { "cssPositionFixed": true } },
@@ -788,11 +688,6 @@ var UserAgent = function() {
     function initCustomCapabilities() {
 
         properties.capabilities.touchEvents = hasTouchEventSupport();
-        properties.capabilities.iscroll = (isIPhone() && !supports("scrollover"));
-        properties.capabilities.scrollability = (isIPad() && !supports("scrollover"));
-        properties.capabilities.pushnotifications = (navigator.push || isAndroidContainer() || window.device);
-        properties.capabilities.chat = (isIPhoneContainer() || isIPadContainer() || getQueryParam("chat") === "1");
-        properties.capabilities["chat-push"] = (isIPhoneContainer() || isIPadContainer());
     }
 
     function processProperties(properties, userAgentString) {
@@ -945,13 +840,6 @@ var UserAgent = function() {
         "isMaemo": isMaemo,
         "isAndroid": isAndroid,
         "isTablet": isTablet,
-        "isNokiaContainer": isNokiaContainer,
-        "isHybridContainer": isHybridContainer,
-        "isAndroidContainer": isAndroidContainer,
-        "isBlackBerryContainer": isBlackBerryContainer,
-        "isIPadContainer": isIPadContainer,
-        "isIPhoneContainer": isIPhoneContainer,
-        "isIOSContainer": isIOSContainer,
         "isDesktopBrowser": isDesktopBrowser,
         "isMobileDevice": isMobileDevice,
         "isIOS": isIOS,
