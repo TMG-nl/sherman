@@ -19,7 +19,9 @@ class Feature(ShermanFeature):
 
         print "    Compiling LESS..."
 
-        pipes = subprocess.Popen(self.shermanDir + "/features/less/compile.js", shell = True, stdin = subprocess.PIPE, stdout = subprocess.PIPE)
+        PIPE = subprocess.PIPE
+        pipes = subprocess.Popen(self.shermanDir + "/features/less/compile.js", shell = True, stdin = PIPE, stdout = PIPE, stderr = PIPE)
+
         css = ""
         while pipes.poll() == None:
             (stdoutdata, stderrdata) = pipes.communicate(input = module["__styles__"])
