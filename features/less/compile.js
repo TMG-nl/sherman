@@ -15,6 +15,6 @@ process.stdin.on("data", function(data) {
 
 process.stdin.on("end", function() {
     less.render(input, function(error, css) {
-	process.stdout.write(css);
+        process.stdout.write(css);
     });
 });
