@@ -11,7 +11,3 @@ class Feature(ShermanFeature):
             "excludeFromNamespace": True,
             "runJsLint": False
         })
-
-    @ShermanFeature.priority(0)
-    def manifestLoaded(self, moduleName, modulePath, manifest):
-        ShermanFeature.manifestLoaded(self, moduleName, modulePath, manifest)

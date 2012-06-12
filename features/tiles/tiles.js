@@ -63,6 +63,7 @@ var Tiles = function() {
         }
         history = new History({
             changeListener: function(item, changeListenerParams) {
+                console.log(0);
                 Routes.mapPath(changeListenerParams.newHash)
                 .then(function(route) {
                     if (item) {
@@ -101,7 +102,6 @@ var Tiles = function() {
                 });
             }
         });
-
         transitionStartListeners = [];
     }
 

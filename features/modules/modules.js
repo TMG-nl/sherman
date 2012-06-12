@@ -56,7 +56,7 @@ var Modules = function() {
         // remove outdated cached modules
         var name;
         var localStorageProfilingToken = Profiling.start("localStorage.cleanup");
-        if (window.localStorage) {
+        if (window.localStorage && false) {
             for (name in moduleConfig) {
                 if (moduleConfig.hasOwnProperty(name)) {
                     var moduleKey = "mk." + name;
@@ -127,7 +127,7 @@ var Modules = function() {
                 continue;
             }
 
-            if (window.localStorage) {
+            if (window.localStorage && false) {
                 var moduleKey = "mk." + name;
                 var moduleContentKey = window.localStorage.getItem(moduleKey);
                 if (moduleContentKey) {
@@ -242,7 +242,7 @@ var Modules = function() {
 
     function cacheModule(name, body) {
 
-        if (window.localStorage) {
+        if (window.localStorage && false) {
             var resource = moduleConfig[name][locale];
             var moduleKey = "mk." + name;
             var moduleContentKey = "mck." + resource;

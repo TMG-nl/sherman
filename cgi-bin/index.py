@@ -43,6 +43,6 @@ def render(locale):
         version = f.read()
 
     with open("boot.%s.%s%s.html" % (version, locale, extra)) as f:
-        print f.read().replace("[static_base]", "")
+        print f.read().replace("[static_base]", "").replace("[config]", "{}")
 
 render(locale)

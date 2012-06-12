@@ -5,6 +5,7 @@ from shermanfeature import ShermanFeature
 import buildutil
 import os
 import re
+import subprocess
 
 
 class Feature(ShermanFeature):
@@ -41,7 +42,7 @@ class Feature(ShermanFeature):
 
         print "    Loading Hogan templates..."
 
-        module["__templates__"] = u""
+        module["__templates__"] = u"Modules.%s.templates={};" % moduleName
 
         templates = buildutil.dirEntries(modulePath + "/tmpl")
         for path in templates:
