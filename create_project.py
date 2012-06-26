@@ -70,6 +70,11 @@ if __name__ == "__main__":
             "namespace": config.namespace
         })
 
+        shutil.copytree("templates/boot/js", config.targetDirectory + "/modules/boot/js")
+        copyTemplate("templates/boot/manifest.json", config.targetDirectory + "/modules/boot/manifest.json", {
+            "namespace": config.namespace
+        })
+
         os.mkdir(config.targetDirectory + "/docs")
 
         print "Created project %s in directory %s." % (config.projectName, config.targetDirectory)
