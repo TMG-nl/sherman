@@ -46,32 +46,32 @@ if __name__ == "__main__":
 
     try:
         shermanPath = os.path.dirname(os.path.abspath(__file__))
-
+        
         os.mkdir(config.targetDirectory)
-        copyTemplate("templates/Makefile", config.targetDirectory + "/Makefile", {
+        copyTemplate(shermanPath + "/templates/Makefile", config.targetDirectory + "/Makefile", {
             "shermanPath": shermanPath
         })
-        copyTemplate("templates/project-manifest.json", config.targetDirectory + "/project-manifest.json", {
+        copyTemplate(shermanPath + "/templates/project-manifest.json", config.targetDirectory + "/project-manifest.json", {
             "title": config.projectName
         })
 
         os.mkdir(config.targetDirectory + "/boot")
-        copyTemplate("templates/boot.tpl.html", config.targetDirectory + "/boot/boot.tpl.html", {
+        copyTemplate(shermanPath + "/templates/boot.tpl.html", config.targetDirectory + "/boot/boot.tpl.html", {
             "title": buildutil.htmlEscape(config.projectName)
         })
-        shutil.copy("templates/favicon.ico", config.targetDirectory + "/boot/favicon.ico")
+        shutil.copy(shermanPath + "/templates/favicon.ico", config.targetDirectory + "/boot/favicon.ico")
 
         os.mkdir(config.targetDirectory + "/modules")
-        shutil.copytree("templates/core/css", config.targetDirectory + "/modules/core/css")
-        shutil.copytree("templates/core/i18n", config.targetDirectory + "/modules/core/i18n")
-        shutil.copytree("templates/core/js", config.targetDirectory + "/modules/core/js")
-        shutil.copytree("templates/core/tmpl", config.targetDirectory + "/modules/core/tmpl")
-        copyTemplate("templates/core/manifest.json", config.targetDirectory + "/modules/core/manifest.json", {
+        shutil.copytree(shermanPath + "/templates/core/css", config.targetDirectory + "/modules/core/css")
+        shutil.copytree(shermanPath + "/templates/core/i18n", config.targetDirectory + "/modules/core/i18n")
+        shutil.copytree(shermanPath + "/templates/core/js", config.targetDirectory + "/modules/core/js")
+        shutil.copytree(shermanPath + "/templates/core/tmpl", config.targetDirectory + "/modules/core/tmpl")
+        copyTemplate(shermanPath + "/templates/core/manifest.json", config.targetDirectory + "/modules/core/manifest.json", {
             "namespace": config.namespace
         })
 
-        shutil.copytree("templates/boot/js", config.targetDirectory + "/modules/boot/js")
-        copyTemplate("templates/boot/manifest.json", config.targetDirectory + "/modules/boot/manifest.json", {
+        shutil.copytree(shermanPath + "/templates/boot/js", config.targetDirectory + "/modules/boot/js")
+        copyTemplate(shermanPath + "/templates/boot/manifest.json", config.targetDirectory + "/modules/boot/manifest.json", {
             "namespace": config.namespace
         })
 
